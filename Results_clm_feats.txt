@@ -1,0 +1,9 @@
+Results to expect from running the run_clm_feature_point_tests_wild.m:
+
+Mean RMSE error without face outline, with face outline:
+
+CCNF trained on wild - 0.0576, 0.0797
+SVR trained on wild - 0.0763, 0.101
+
+CLNF trained on Multi-PIE - 0.297, 0.336
+SVR trained on Multi-PIE - 0.307, 0.345

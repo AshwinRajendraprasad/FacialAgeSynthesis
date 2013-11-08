@@ -1,0 +1,30 @@
+Results to expect from running the run_clm_head_pose_tests_svr.m and run_clm_head_pose_tests_clnf.m  :
+
+Absolute mean error in degrees from ground truth for pitch yaw and roll respectively
+
+Boston University:
+
+bu_error_clm_ccnf_acc_ml, 	[3.63,3.82,2.50]
+bu_error_clm_ccnf_fast_ml, 	[4.04,3.94,2.48]
+bu_error_clm_svr_acc_ml, 	[3.86,4.09,2.58]
+bu_error_clm_svr_acc_sl, 	[3.74,4.11,2.55]
+bu_error_clm_svr_fast_ml, 	[4.39,4.32,2.58]
+bu_error_clm_svr_fast_sl 	[4.31,4.00,2.50]
+
+ICT-3DHP:
+
+ict_error_ccnf_acc,		[4.69,3.10,4.17]	
+ict_error_ccnf_fast, 	[4.61,3.33,4.35]
+ict_error_clm_acc, 		[5.45,4.28,4.63]
+ict_error_clm_fast, 	[5.01,4.09,4.62]
+ict_error_clmz_acc, 	[5.01,4.05,4.40]
+ict_error_clmz_fast,	[4.75,4.08,4.38]
+
+Biwi:
+
+biwi_error_ccnf_acc,	[10.13,8.99,9.82]
+biwi_error_ccnf_fast,	[ 9.00,7.66,7.27]
+biwi_error_clm_acc,		[10.74,8.93,8.51]
+biwi_error_clm_fast,	[ 9.27,8.18,6.96]
+biwi_error_clmz_acc,	[ 9.62,6.94,7.94]
+biwi_error_clmz_fast,	[ 9.10,7.60,7.16]
