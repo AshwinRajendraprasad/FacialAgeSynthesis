@@ -1,5 +1,6 @@
-function [ eigenvectors, eigenvalues, gbar ] = PerformPCA( allWarped, proportion )
-     [gbar, aligned] = FindMean(allWarped);
+function [ V, D, gbar, avg_alpha ] = PerformPCA( allWarped, proportion )
+
+    [gbar, aligned, avg_alpha, ~] = FindMean(allWarped);
      
 %     % Calculate the covariance matrix
 %     S = 0;
@@ -13,9 +14,9 @@ function [ eigenvectors, eigenvalues, gbar ] = PerformPCA( allWarped, proportion
 %     % to calculate the mean myself
 %     [eigenvectors, eigenvalues] = pcacov(S);
 
-    [eigenvectors, ~, eigenvalues] = pca(aligned, 'Algorithm', 'eig');
+    [V, ~, D] = pca(aligned, 'Economy', true);
 
-%     t = FindT(eigenvalues, proportion);
-%     eigenvectors = eigenvectors(:,1:t);
-%     eigenvalues = eigenvalues(1:t,:);
+    t = FindT(D, proportion);
+    V = V(:,1:t);
+    D = D(1:t,:);
 end
