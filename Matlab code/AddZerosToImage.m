@@ -1,14 +1,10 @@
 function [ image ] = AddZerosToImage( mask, nonzero_image )
-%UNTITLED Summary of this function goes here
-%   Detailed explanation goes here
-    image = zeros(1,size(mask(:),1));
-    image_pixel = 1;
-    for i=1:size(mask(:),1)
-        if mask(i) == 1
-            image(i) = nonzero_image(image_pixel);
-            image_pixel = image_pixel+1;
-        end
-    end
+%AddZerosToImage As the images are stored as only the masked pixels, this
+%function takes a vectorised image stored in this way and returns the full
+%size image in a matrix
+
+    image = zeros(size(mask));
+    image(logical(mask)) = nonzero_image;
 
 end
 

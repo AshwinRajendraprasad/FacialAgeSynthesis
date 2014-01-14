@@ -5,6 +5,12 @@
 *.suo
 *.user
 *.sln.docstates
+*.svn-base
+
+Matlab code/Tadas Code/AAM/Data/
+Matlab code/Tadas Code/AAM/AAMTraining/_svn/
+Matlab code/Tadas Code/AAM/Functions/_svn
+
 
 # Build results
 
