@@ -1,9 +1,9 @@
-function [gbar, aligned, average_alpha, average_beta] = FindMean(allWarped)
-    maxIter = 1000;
-    alignment = zeros(size(allWarped,1), 2);
-    aligned = allWarped;
+function [gbar, aligned_images, Transform] = FindMean(images)
+    maxIter = 10;
+    alignment = zeros(size(images,1), 2);
+    aligned_images = images;
     % Start by choosing any sample as the mean (choose the first)
-    gbar = allWarped(1,:);
+    gbar = images(1,:);
 
     % Create vector the size of the images that is all ones, used for beta
     allOnes = ones(size(gbar));
@@ -19,17 +19,17 @@ function [gbar, aligned, average_alpha, average_beta] = FindMean(allWarped)
         if j > maxIter
             break;
         end
-        for i=1:size(allWarped,1)
-            g = allWarped(i,:);
+        for i=1:size(images,1)
+            g = images(i,:);
             %alpha
             alignment(i,1) = dot(g, aligned_gbar);
             %beta
             alignment(i,2) = dot(g, allOnes)/n;
             g = (g-alignment(i,2)*allOnes)/alignment(i,1);
-            aligned(i,:) = g;
+            aligned_images(i,:) = g;
         end
         gbar_old = gbar;
-        gbar = FindSimpleMean(allWarped);
+        gbar = FindSimpleMean(images);
         aligned_gbar = ScaleAndOffset(gbar);
     end
     

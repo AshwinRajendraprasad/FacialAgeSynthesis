@@ -1,7 +1,7 @@
-function [ V, D, gbar, avg_alpha ] = PerformPCA( allWarped, proportion )
-
-    [gbar, aligned, avg_alpha, ~] = FindMean(allWarped);
-     
+function [ modes, variances ] = PerformPCA( textures, proportion_explained )
+    
+    % Make the mean of each pixel 0 for the PCA
+    textures = textures - repmat(mean(textures,1),size(textures,1),1);
 %     % Calculate the covariance matrix
 %     S = 0;
 %     for i=1:size(aligned,1)
@@ -14,9 +14,9 @@ function [ V, D, gbar, avg_alpha ] = PerformPCA( allWarped, proportion )
 %     % to calculate the mean myself
 %     [eigenvectors, eigenvalues] = pcacov(S);
 
-    [V, ~, D] = pca(aligned, 'Economy', true);
+    [modes, ~, variances] = pca(textures, 'Economy', true);
 
-    t = FindT(D, proportion);
-    V = V(:,1:t);
-    D = D(1:t,:);
+    t = FindT(variances, proportion_explained);
+    modes = modes(:,1:t);
+    variances = variances(1:t,:);
 end
