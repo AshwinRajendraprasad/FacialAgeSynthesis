@@ -1,5 +1,8 @@
-function [mean_texture, aligned_textures, Transform] = FindMean_v2(textures)
+function [mean_texture, aligned_textures, Transform] = FindMean_v2(textures, single_iter)
     maxIter = 10;
+    if single_iter
+        maxIter = 1;
+    end
 
     aligned_textures = textures;
     
