@@ -1,51 +1,74 @@
-function [ inverse_ageing, random_params ] = InverseAgeing_simulated( mdl, offset, scale, variances, modes, gbar, number_produced, mask )
+function [ inverse_ageing, random_params, ages_quant ] = InverseAgeing_simulated( AgeingModel, AppearanceModel, maxNumber, mask )
 %UNTITLED Summary of this function goes here
 %   Detailed explanation goes here
-
-    modes_stddev = sqrt(variances);
     
-    random_params = zeros(number_produced, size(variances,1));
-    ages = zeros(number_produced, 1);
+    AGE_MIN = 20;
+    AGE_MAX = 49;
+    QUANT = 2000;
+    NUM_RANGE = 6;
+    modes_stddev = sqrt(AppearanceModel.variances);
+    
+    random_params = zeros(QUANT*(AGE_MAX-AGE_MIN+1), size(AppearanceModel.variances,1));
+    ages = zeros(QUANT*(AGE_MAX-AGE_MIN+1), 1);
+    ages_quant = zeros(NUM_RANGE, 1);
     
     counter = 1;
-    params_sofar = 0;
-    while params_sofar < number_produced
+
+    for i=1:maxNumber
         % generates normally distributed random vector with mean 0 and
         % std dev the same as the std dev of each mode of appearance,
         % giving random (but plausible) appearance parameters
-        b_rand = randn(size(variances)).*modes_stddev;
-        b_rand_norm = (b_rand - transpose(offset)) .* transpose(scale);
+        b_rand = randn(size(AppearanceModel.variances)).*modes_stddev;
+        
+        % clamp the random parameters so they aren't larger than 3 std
+        % dev
+%         larger = b_rand > 3*modes_stddev;
+%         if any(larger)
+%             b_rand(larger) = 3*modes_stddev(larger);
+%         end
+%         smaller = -b_rand > 3*modes_stddev;
+%         if any(smaller)
+%             b_rand(smaller) =-3*modes_stddev(smaller);
+%         end
         
         % make into an image and display to check that it is a plausible
         % face
-%         g_rand = gbar + transpose(modes*b_rand);
-%         imshow(reshape(AddZerosToImage(mask, g_rand), size(mask))/255);
-%         age = round(predict(mdl, transpose(b_rand_norm)));
+%         g_rand = AppearanceParams2Texture(b_rand, AppearanceModel);
+%         imshow(AddZerosToImage(mask, g_rand)/255);
+%         age = round(PredictAge(AgeingModel, b_rand));
 %         display(age);
 %         waitforbuttonpress;
-        % Only use this one if the user has pressed Enter to signify that
-        % it is a plausible face
+%         Only use this one if the user has pressed Enter to signify that
+%         it is a plausible face
 %         kkey = get(gcf,'CurrentCharacter');
-        if (13 == 13)
-            random_params(counter, :) = b_rand;
-            age = round(predict(mdl, transpose(b_rand_norm)));
-            if (age > 18 && age < 60)
+%         if (kkey == 13)
+        if true
+            age = round(PredictAge(AgeingModel, b_rand));
+            age_range = ceil((age-19)/5);
+            if (age > (AGE_MIN-1) && age < (AGE_MAX+1) && ages_quant(age_range)<QUANT)
                 ages(counter) = age;
+                ages_quant(age_range) = ages_quant(age_range)+1;
+                random_params(counter, :) = b_rand;
                 counter = counter+1;
-                params_sofar = params_sofar+1;
             end
+        end
+        
+        if ages_quant()==QUANT
+            break
         end
     end
     
-    inverse_ageing = zeros(max(ages), size(variances,1));
-    for i=min(ages):max(ages)
+    % Remove the zero valued rows
+    ages(~any(ages,2)) = [];
+    random_params(~any(random_params,2),:) = [];
+    
+    inverse_ageing = zeros(NUM_RANGE, size(AppearanceModel.variances,1));
+    for i=1:NUM_RANGE
         % the inverse ageing function will be a matrix where the row is the
         % age.  This isn't too much of a waste of space as the ages will
         % not go very high
-        if any((ages == i))
-            params = random_params(ages==i, :);
-            inverse_ageing(i,:) = mean(params, 1);
-        end
+        params = random_params((ages>((i-1)*5+19))&(ages<(i*5+19)), :);
+        inverse_ageing(i,:) = mean(params, 1);
     end
 end
 

@@ -1,4 +1,4 @@
-function [ Model ] = BuildAgeingModel( textures, AppearanceModel, subjectlist, subj_numbers, alpha, lambda )
+function [ Model ] = BuildAgeingModel_reg( textures, AppearanceModel, subjectlist, subj_numbers, lambda )
 %BuildAgeingModel Finds the ageing model based on the images
 %   Fits a model for the ages based on appearance parameters.  The
 %   subject numbers for the images are in a separate variable as there is
@@ -31,8 +31,11 @@ function [ Model ] = BuildAgeingModel( textures, AppearanceModel, subjectlist, s
     Model.Transform.scale = std(app_params);
     app_params = (app_params-repmat(Model.Transform.offset, size(app_params,1), 1))./repmat(Model.Transform.scale, size(app_params,1), 1);
 
-    Model.mdl = fitlm([app_params, app_params.^2], ages);
-%     [Model.coeffs_all, Model.FitInfo] = lasso([app_params, app_params.^2], ages);
+%     Model.mdl = fitlm([app_params, app_params.^2], ages);
+    [Model.coeffs_all, Model.FitInfo] = lasso([app_params, app_params.^2], ages, 'Lambda', lambda);
+    Model.offset = Model.FitInfo.Intercept;
+    Model.coeffs(:,1) = Model.coeffs_all(1:end/2);
+    Model.coeffs(:,2) = Model.coeffs_all(end/2+1:end);
    
 %     Model = PolyRegression(app_params, ages, alpha, lambda);
 end

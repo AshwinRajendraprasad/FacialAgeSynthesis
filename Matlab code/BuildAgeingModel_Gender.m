@@ -5,8 +5,8 @@ function [ AgeingModels ] = BuildAgeingModel_Gender( textures, AppearanceModels,
 
     [male_textures, female_textures, male_inds, female_inds] = SplitTextures_Gender(textures, subjectlist, genders, subj_numbers);
     
-    [AgeingModels.Male] = BuildAgeingModel(male_textures, AppearanceModels.Male, subjectlist, subj_numbers(male_inds), 0.003);
-    [AgeingModels.Female] = BuildAgeingModel(female_textures, AppearanceModels.Female, subjectlist, subj_numbers(female_inds), 0.003);
+    [AgeingModels.Male] = BuildAgeingModel(male_textures, AppearanceModels.Male, subjectlist, subj_numbers(male_inds), 0.003,0);
+    [AgeingModels.Female] = BuildAgeingModel(female_textures, AppearanceModels.Female, subjectlist, subj_numbers(female_inds), 0.003,0);
 
 end
 

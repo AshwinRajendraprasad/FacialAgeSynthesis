@@ -1,5 +1,6 @@
-function [ model ] = PolyRegression( X, Y, alpha )
-%PolyRegression Summary of this function goes here
+function [ model ] = PolyRegression( X, Y, alpha, lambda )
+%PolyRegression Performs polynomial regression using gradient descent -
+%quadratic model
 %   X is a n-by-m matrix - n is number of training examples, m is number of
 %   features
 
@@ -25,7 +26,7 @@ function [ model ] = PolyRegression( X, Y, alpha )
     
     X_sq = X.*X;
     
-    cost = sum((theta0 + theta1'*X' + theta2'*X_sq' - Y').^2)/(2*numExamples);
+    cost = CostFunction(theta0, theta1, theta2, X, X_sq, Y, numExamples, lambda);
     costs = zeros(maxIter,1);
     costs(1) = cost;
     
@@ -45,15 +46,19 @@ function [ model ] = PolyRegression( X, Y, alpha )
         del_theta2 = del_theta2/numExamples;
         
         theta0 = theta0 - alpha*del_theta0;
-        theta1 = theta1 - alpha.*del_theta1;
-        theta2 = theta2 - alpha.*del_theta2;
+        theta1 = theta1 - alpha.*(del_theta1 + lambda/numExamples*theta1);
+        theta2 = theta2 - alpha.*(del_theta2 + lambda/numExamples*theta2);
         
         old_cost = cost;
-        cost = sum((theta0 + theta1'*X' + theta2'*X_sq' - Y').^2)/(2*numExamples);
+        cost = CostFunction(theta0, theta1, theta2, X, X_sq, Y, numExamples, lambda);
         costs(iter+1) = cost;
         
         % if there has been no change then converged so break
-        if (abs(cost-old_cost) < 0.00000000001)
+        if (abs(cost-old_cost) < 0.000001)
+            break;
+        end
+        
+        if (cost-old_cost) > 0
             break;
         end
     end

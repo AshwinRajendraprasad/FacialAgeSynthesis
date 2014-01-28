@@ -1,10 +1,16 @@
-function [ params_new ] = ChangeFaceAge( mdl, offset, scale, modes_inv, gbar, image, inverse_ageing, target_age )
+function [ params_new ] = ChangeFaceAge( AgeingModel, AppearanceModel, image, inverse_ageing, age_change )
 %UNTITLED7 Summary of this function goes here
 %   Detailed explanation goes here
 
-    params = FindModelParameters(modes_inv, gbar, image);
-    age_est = round(predict(mdl, (params-offset).*scale));
+    params = FindModelParameters(AppearanceModel, image);
+    age_est = round(PredictAge(AgeingModel, params));
+    display(age_est);
+    display(age_change);
     
-    params_new = params + (inverse_ageing(target_age) - inverse_ageing(age_est));
+    if (age_est+age_change>size(inverse_ageing,1)) || (age_est+age_change<find(inverse_ageing,1,'first'))
+        error('Age not in range');
+    end
+    
+    params_new = params + (inverse_ageing(age_est+age_change) - inverse_ageing(age_est));
 end
 

@@ -1,4 +1,4 @@
-function [ AgeingModel, diff ] = TrainAndTestAgeingModel( textures, AppearanceModel, subj_numbers, subjectlist, lambda )
+function [ AgeingModel, diff ] = TrainAndTestAgeingModel_reg( textures, AppearanceModel, subj_numbers, subjectlist, lambda )
 %UNTITLED4 Summary of this function goes here
 %   Detailed explanation goes here
 
@@ -29,7 +29,7 @@ function [ AgeingModel, diff ] = TrainAndTestAgeingModel( textures, AppearanceMo
     AppearanceModel = BuildAppearanceModel(train_textures, true);
     AgeingModel = BuildAgeingModel(train_textures, AppearanceModel, subjectlist, subj_numbers(train_tex_inds), 0.003, lambda);
     
-    diff = TestAgeingModel(AgeingModel, AppearanceModel, test_textures, subj_numbers(test_tex_inds), subjectlist);
+    diff = TestAgeingModel_reg(AgeingModel, AppearanceModel, test_textures, subj_numbers(test_tex_inds), subjectlist);
 
 end
 

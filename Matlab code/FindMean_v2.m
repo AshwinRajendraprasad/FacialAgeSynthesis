@@ -25,12 +25,13 @@ function [mean_texture, aligned_textures, Transform] = FindMean_v2(textures, sin
         for i=1:size(textures,1)
             aligned_textures(i,:) = aligned_textures(i,:) ./ (dot(mean_texture, aligned_textures(i,:))/n);
         end
+
         mean_texture_old = mean_texture;
         % recalculate and normalise mean
         mean_texture = mean(aligned_textures);
         mean_texture = mean_texture - mean(mean_texture);
         mean_texture = mean_texture / std(mean_texture);
-        
+
         % if there has been no change then converged so break
         if (norm(mean_texture - mean_texture_old,'fro') < 1)
             break;
