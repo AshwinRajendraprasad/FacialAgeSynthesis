@@ -1,6 +1,6 @@
 function [ age_proto, age_quant ] = AverageParamsAgeRange( textures, AppearanceModel, subjectlist, subj_numbers, sigma, mask )
 %UNTITLED2 Summary of this function goes here
-%   The age ranges are 20-24, 25-29, ..., 55-59, 60+
+%   The age ranges are 20-24, 25-29, ..., 55+
     
     % Using an approximation to the subjects age by assuming the pictures
     % were taken the year that the paper was published, and calculating the
