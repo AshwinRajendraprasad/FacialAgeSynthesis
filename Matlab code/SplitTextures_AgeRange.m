@@ -1,6 +1,6 @@
 function [ textures_agerange ] = SplitTextures_AgeRange( textures, subjectlist, subj_numbers )
-%UNTITLED Summary of this function goes here
-%   Detailed explanation goes here
+%SplitTextures_AgeRange Splits the input textures into separate age ranges
+%   The age ranges are 20-24, 25-29, ..., 55+
 
     YEAR_TAKEN = 2008;
     

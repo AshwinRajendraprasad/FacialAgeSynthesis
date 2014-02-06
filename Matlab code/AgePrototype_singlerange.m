@@ -1,9 +1,13 @@
 function [ age_prototype ] = AgePrototype_singlerange( textures, sigma, mask )
-%UNTITLED2 Summary of this function goes here
-%   Detailed explanation goes here
+%AgePrototype_singlerange Build the age prototype for a single age range
+%   Gives blurring at the edges as trying to remove the very high
+%   frequency components in that region or they overwhelm the image
 
     avg_face = mean(textures);
     high_frequency = ones(1,size(textures,2));
+
+%     textures = (textures)./repmat(max(abs(textures),[],2), 1, size(textures,2));
+%     textures = (textures)./repmat(max(abs(textures)), size(textures,1), 1);
     
     for i=1:size(textures,1)
         high_frequency = immultiply(high_frequency, (imdivide(textures(i,:),GaussianBlur(textures(i,:),sigma,mask)')));
@@ -18,7 +22,8 @@ function [ age_prototype ] = AgePrototype_singlerange( textures, sigma, mask )
     high_f_im(mask_edge) = 1;
     high_f_im = high_f_im(logical(mask));
     high_frequency = high_f_im(:);
-    high_frequency(high_frequency>3) = 3;
+    high_frequency(high_frequency>2) = 2;
+    high_frequency(high_frequency<-2) = -2;
     
     age_prototype = immultiply(high_frequency', avg_face);
 end

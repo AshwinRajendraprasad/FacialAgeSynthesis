@@ -27,6 +27,9 @@ function [  ] = MissOneOut_Appearance( textures, mask, subjectlist, subj_numbers
         subplot(1,3,1), imshow(AddZerosToImage(mask, test_texts(i,:))/255);
         subplot(1,3,2), imshow(AddZerosToImage(mask, AppearanceParams2Texture(FindModelParameters(AppearanceModel_half, test_texts(i,:)), AppearanceModel_half))/255);
         subplot(1,3,3), imshow(AddZerosToImage(mask, AppearanceParams2Texture(FindModelParameters(AppearanceModel, test_texts(i,:)), AppearanceModel))/255);
+        
+        subplot(1,2,1), imshow(AddZerosToImage(mask, test_texts(i,:))/255);
+        subplot(1,2,2), imshow(AddZerosToImage(mask, AppearanceParams2Texture(FindModelParameters(AppearanceModel, test_texts(i,:)), AppearanceModel))/255);
     end
 
 end

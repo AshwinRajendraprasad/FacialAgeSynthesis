@@ -3,6 +3,6 @@ function [ textures, mask ] = PrepareImages( images, landmarkLocations, M, T )
 
     [ alphas, betas, triX, mask, xmin, ymin, npix ] = InitialisePieceWiseAffine(T, m2d);
     
-    textures = WarpImages(images, landmarkLocations, T, triX, mask, alphas, betas, npix, xmin, ymin)/255;
+    textures = WarpImages(images, landmarkLocations, T, triX, mask, alphas, betas, npix, xmin, ymin);
 
 end

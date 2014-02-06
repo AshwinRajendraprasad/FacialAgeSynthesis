@@ -3,15 +3,16 @@ num_iters = 10;
 % errors_male = zeros(num_iters,5504,2);
 % errors_female = zeros(num_iters,5504,2);
 % errors_nongender = zeros(num_iters,5504,2);
+errors_reg = zeros(num_iters, 5502, 2);
 
-errors_reg = zeros(num_iters, 100, 5504, 2);
+% errors_reg = zeros(num_iters, 100, 5504, 2);
 % lambdas = zeros(num_iters, 1);
 
 % numberim_male = zeros(num_iters,1);
 % numberim_female = zeros(num_iters,1);
 % numberim_nongender = zeros(num_iters,1);
 numberim_reg = zeros(num_iters,1);
-lambdas = zeros(num_iters, 100);
+% lambdas = zeros(num_iters, 100);
 
 % AppearanceModel_nongender = BuildAppearanceModel(allWarped1, true);
 % AppearanceModel.Male = 0;
@@ -29,17 +30,15 @@ for i=1:num_iters
 %     [~, diff_nongender] = TrainAndTestAgeingModel(allWarped1, 0, subj_numbers, subjectlist, 0);
 %     errors_nongender(i,1:size(diff_nongender,1),:) = diff_nongender;
 %     numberim_nongender(i) = size(diff_nongender,1);
+
+    [~, diff_reg] = TrainAndTestAgeingModel_reg(allWarped1(1:2752,:), 0, subj_numbers(1:2752), subjectlist, 0.188467346050386);
+    errors_reg(i,1:size(diff_reg,1),:) = diff_reg;
+    numberim_reg(i) = size(diff_reg,1);
     
-%     if mod(i,2)==0
-%         lambda = 10^(i/2-3) * 3;
-%     else
-%         lambda = 10^(ceil(i/2)-3);
-%     end
-%     lambdas(i) = lambda;
-    [AM_reg, diff_reg] = TrainAndTestAgeingModel_reg(allWarped1, 0, subj_numbers, subjectlist, 0);
-    errors_reg(i,:,1:size(diff_reg,2),:) = diff_reg;
-    numberim_reg(i) = size(diff_reg,2);
-    lambdas(i,:) = AM_reg.FitInfo.Lambda;
+%     [AM_reg, diff_reg] = TrainAndTestAgeingModel_reg(allWarped1(1:2752,:), 0, subj_numbers(1:2752), subjectlist, 0);
+%     errors_reg(i,:,1:size(diff_reg,2),:) = diff_reg;
+%     numberim_reg(i) = size(diff_reg,2);
+%     lambdas(i,:) = AM_reg.FitInfo.Lambda;
     
 end
 
@@ -47,8 +46,9 @@ end
 % mean_error_male = zeros(num_iters,1);
 % mean_error_female = zeros(num_iters,1);
 % mean_error_nongender = zeros(num_iters,1);
-mean_error_reg = zeros(num_iters,100);
-min_lambdas = zeros(num_iters,1);
+mean_error_reg = zeros(num_iters,1);
+% mean_error_reg = zeros(num_iters,100);
+% min_lambdas = zeros(num_iters,1);
 
 for i=1:num_iters
 %     errors = errors_male(i,1:numberim_male(i),2);
@@ -58,13 +58,14 @@ for i=1:num_iters
 %     
 %     errors = errors_nongender(i,1:numberim_nongender(i),2);
 %     mean_error_nongender(i) = mean(abs(errors));
-%     errors = errors_reg(i,1:numberim_reg(i),2);
-%     mean_error_reg(i) = mean(abs(errors));
-    errors = squeeze(errors_reg(i, :, 1:numberim_reg(i),2));
-    for j=1:100
-        mean_error_reg(i, j) = mean(abs(errors(j,:)));
-    end
-    min_lamb = min(mean_error_reg(i,:));
+    errors = errors_reg(i,1:numberim_reg(i),2);
+    mean_error_reg(i) = mean(abs(errors));
+%     errors = squeeze(errors_reg(i, :, 1:numberim_reg(i),2));
+%     for j=1:100
+%         mean_error_reg(i, j) = mean(abs(errors(j,:)));
+%     end
+%     min_lamb = min(mean_error_reg(i,:));
+% 
+%     min_lambdas(i) = lambdas(i,mean_error_reg(i,:) == min_lamb);
 
-    min_lambdas(i) = lambdas(i,mean_error_reg(i,:) == min_lamb);
 end
