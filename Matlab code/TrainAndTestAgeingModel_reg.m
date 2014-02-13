@@ -26,12 +26,15 @@ function [ AgeingModel, diff ] = TrainAndTestAgeingModel_reg( textures, Appearan
     train_textures = textures(train_tex_inds,:);
     test_textures = textures(test_tex_inds,:);
     
-    AppearanceModel = BuildAppearanceModel(train_textures, true);
-%     AgeingModel = BuildAgeingModel_reg(train_textures, AppearanceModel, subjectlist, subj_numbers(train_tex_inds), lambda);
-    AgeingModel = BuildAgeingModel_reg_singlelam(train_textures, AppearanceModel, subjectlist, subj_numbers(train_tex_inds), lambda);
+    AppearanceModel = BuildAppearanceModel(train_textures, false);
     
-%     diff = TestAgeingModel_reg(AgeingModel, AppearanceModel, test_textures, subj_numbers(test_tex_inds), subjectlist);
-    diff = TestAgeingModel(AgeingModel, AppearanceModel, test_textures, subj_numbers(test_tex_inds), subjectlist);
+    if lambda==0
+        AgeingModel = BuildAgeingModel_reg(train_textures, AppearanceModel, subjectlist, subj_numbers(train_tex_inds));
+        diff = TestAgeingModel_reg(AgeingModel, AppearanceModel, test_textures, subj_numbers(test_tex_inds), subjectlist);
+    else
+        AgeingModel = BuildAgeingModel_reg_singlelam(train_textures, AppearanceModel, subjectlist, subj_numbers(train_tex_inds), lambda);
+        diff = TestAgeingModel(AgeingModel, AppearanceModel, test_textures, subj_numbers(test_tex_inds), subjectlist);
+    end
 
 end
 

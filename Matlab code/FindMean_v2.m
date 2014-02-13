@@ -13,6 +13,7 @@ function [mean_texture, aligned_textures, Transform] = FindMean_v2(textures, sin
     Transform.scale = std(mean_texture);
     mean_texture = mean_texture / Transform.scale;
     
+    
     % The number of elements in a texture vector
     n = size(mean_texture,2);
 
@@ -25,6 +26,11 @@ function [mean_texture, aligned_textures, Transform] = FindMean_v2(textures, sin
         for i=1:size(textures,1)
             aligned_textures(i,:) = aligned_textures(i,:) ./ (dot(mean_texture, aligned_textures(i,:))/n);
         end
+        
+%         aligned_textures = textures - repmat(mean(textures,2),1,size(textures,2));
+%         for i=1:size(textures,1)
+%             aligned_textures(i,:) = aligned_textures(i,:) ./ (dot(mean_texture, textures(i,:)));
+%         end
 
         mean_texture_old = mean_texture;
         % recalculate and normalise mean
@@ -39,6 +45,5 @@ function [mean_texture, aligned_textures, Transform] = FindMean_v2(textures, sin
     end
     
     % scale textures so std dev is 1
-    mean_texture = mean(aligned_textures);
     aligned_textures = aligned_textures / std(mean_texture);
 end

@@ -1,4 +1,4 @@
-function DisplayAgePrototypes(age_prototypes, mask, save, save_folder)
+function DisplayAgePrototypes(age_prototypes, mask, numChannels, save, save_folder)
 %DisplayAgePrototypes Displays and saves the figures of the age prototypes
 %   2 different formats of display, the first is a figure per age range and
 %   shows all different sigma plus tau for that sigma.  Second displays the
@@ -8,7 +8,7 @@ function DisplayAgePrototypes(age_prototypes, mask, save, save_folder)
         p = age_prototypes(j);
         for i=1:size(p.sigma,2)
             subplot(4,5,i)
-            imshow(AddZerosToImage(mask, p.prototype(i,:))/255)
+            imshow(AddZerosToImage(mask, p.prototype(i,:), numChannels)/255)
             colormap(gray)
             axis off
 
@@ -26,7 +26,7 @@ function DisplayAgePrototypes(age_prototypes, mask, save, save_folder)
     fig =figure;
     for i=1:8
         subplot(2,4,i)
-        imshow(AddZerosToImage(mask, age_prototypes(i).best_proto)/255)
+        imshow(AddZerosToImage(mask, age_prototypes(i).best_proto, numChannels)/255)
         colormap(gray)
         axis off
         if i==8

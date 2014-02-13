@@ -1,4 +1,4 @@
-function DisplayAppearanceVariation( AppearanceModel, numModes, numExamples, mask )
+function DisplayAppearanceVariation( AppearanceModel, numModes, numExamples, mask, numChannels )
 %UNTITLED2 Summary of this function goes here
 %   Detailed explanation goes here
 
@@ -17,7 +17,7 @@ function DisplayAppearanceVariation( AppearanceModel, numModes, numExamples, mas
             
             texture = AppearanceParams2Texture(params, AppearanceModel);
 
-            subimage(AddZerosToImage(mask, texture)/255);
+            subimage(AddZerosToImage(mask, texture, numChannels)/255);
 
             axis(currPlot, 'off');
 

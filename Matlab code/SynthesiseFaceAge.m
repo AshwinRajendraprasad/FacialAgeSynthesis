@@ -1,4 +1,4 @@
-function [ aged_face ] = SynthesiseFaceAge( age_prototypes, novel_texture, target_age, AgeingModel, AppearanceModel, mask )
+function [ aged_face ] = SynthesiseFaceAge( age_prototypes, novel_texture, target_age, AgeingModel, AppearanceModel, mask, numChannels )
 %UNTITLED6 Summary of this function goes here
 %   Detailed explanation goes here
 
@@ -9,7 +9,7 @@ function [ aged_face ] = SynthesiseFaceAge( age_prototypes, novel_texture, targe
     
     sigma = 0.5;
     while true
-        aged_face = immultiply(imdivide(proto, GaussianBlur(proto, sigma, mask)'), GaussianBlur(novel_texture, sigma, mask)');
+        aged_face = proto ./ GaussianBlur(proto, sigma, mask, numChannels)' .* GaussianBlur(novel_texture, sigma, mask, numChannels)';
         age = PredictAge(AgeingModel, FindModelParameters(AppearanceModel, aged_face));
         tau = age - target_age;
         if tau>3

@@ -1,4 +1,4 @@
-function [ age_prototypes ] = Age_Prototype( textures_agerange, AppearanceModel, AgeingModel, mask )
+function [ age_prototypes ] = Age_Prototype( textures_agerange, AppearanceModel, AgeingModel, mask, numChannels )
 %Age_Prototype Build the age prototype for each age range
 %   The age ranges are assumed to be 20-24, 25-29, ..., 55+
 
@@ -15,7 +15,7 @@ function [ age_prototypes ] = Age_Prototype( textures_agerange, AppearanceModel,
             % doesn't work so well for the last age group but see how it
             % goes
             target_age = (j-1)*5+22.5;
-            age_prototypes(j).prototype(i,:) = AgePrototype_singlerange(textures_agerange(j).textures, sigma, mask);
+            age_prototypes(j).prototype(i,:) = AgePrototype_singlerange(textures_agerange(j).textures, sigma, mask, numChannels);
             age = PredictAge(AgeingModel, FindModelParameters(AppearanceModel, age_prototypes(j).prototype(i,:)));
             age_prototypes(j).tau(i) = age - target_age;
             age_prototypes(j).sigma(i) = sigma;

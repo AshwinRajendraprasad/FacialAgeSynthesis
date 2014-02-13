@@ -1,4 +1,4 @@
-function [ Model ] = BuildAgeingModel_reg( textures, AppearanceModel, subjectlist, subj_numbers, lambda )
+function [ Model ] = BuildAgeingModel_reg( textures, AppearanceModel, subjectlist, subj_numbers )
 %BuildAgeingModel Finds the ageing model based on the images
 %   Fits a model for the ages based on appearance parameters.  The
 %   subject numbers for the images are in a separate variable as there is
