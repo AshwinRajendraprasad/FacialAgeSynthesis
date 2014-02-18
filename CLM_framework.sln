@@ -23,6 +23,8 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "SimplePuppets", "exe\Simple
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "ConsolePuppets", "exe\ConsolePuppets\ConsolePuppets.vcxproj", "{DF6B383D-260B-4549-9081-1026165B131C}"
 EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "AgeSynthesis", "AgeSynthesis\AgeSynthesis.vcxproj", "{CC798F29-9BCE-4C5E-9A73-70ED068382C8}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Win32 = Debug|Win32
@@ -69,6 +71,10 @@ Global
 		{DF6B383D-260B-4549-9081-1026165B131C}.Debug|Win32.Build.0 = Debug|Win32
 		{DF6B383D-260B-4549-9081-1026165B131C}.Release|Win32.ActiveCfg = Release|Win32
 		{DF6B383D-260B-4549-9081-1026165B131C}.Release|Win32.Build.0 = Release|Win32
+		{CC798F29-9BCE-4C5E-9A73-70ED068382C8}.Debug|Win32.ActiveCfg = Debug|Win32
+		{CC798F29-9BCE-4C5E-9A73-70ED068382C8}.Debug|Win32.Build.0 = Debug|Win32
+		{CC798F29-9BCE-4C5E-9A73-70ED068382C8}.Release|Win32.ActiveCfg = Release|Win32
+		{CC798F29-9BCE-4C5E-9A73-70ED068382C8}.Release|Win32.Build.0 = Release|Win32
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
