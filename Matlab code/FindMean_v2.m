@@ -22,15 +22,15 @@ function [mean_texture, aligned_textures, Transform] = FindMean_v2(textures, sin
     % been reached
     for j=1:maxIter
         % transform textures to 0 mean
-        aligned_textures = aligned_textures - repmat(mean(aligned_textures,2),1,size(aligned_textures,2));
-        for i=1:size(textures,1)
-            aligned_textures(i,:) = aligned_textures(i,:) ./ (dot(mean_texture, aligned_textures(i,:))/n);
-        end
-        
-%         aligned_textures = textures - repmat(mean(textures,2),1,size(textures,2));
+%         aligned_textures = aligned_textures - repmat(mean(aligned_textures,2),1,size(aligned_textures,2));
 %         for i=1:size(textures,1)
-%             aligned_textures(i,:) = aligned_textures(i,:) ./ (dot(mean_texture, textures(i,:)));
+%             aligned_textures(i,:) = aligned_textures(i,:) ./ (dot(mean_texture, aligned_textures(i,:))/n);
 %         end
+        
+        aligned_textures = textures - repmat(mean(textures,2),1,size(textures,2));
+        for i=1:size(textures,1)
+            aligned_textures(i,:) = aligned_textures(i,:) ./ (dot(mean_texture, textures(i,:))/n);
+        end
 
         mean_texture_old = mean_texture;
         % recalculate and normalise mean

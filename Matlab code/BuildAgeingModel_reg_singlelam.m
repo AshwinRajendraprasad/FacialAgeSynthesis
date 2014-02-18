@@ -20,10 +20,6 @@ function [ Model ] = BuildAgeingModel_reg_singlelam( textures, AppearanceModel, 
         app_params(i,:) = FindModelParameters(AppearanceModel, textures(i,:));
         birthyear = subjlist_year(subjlist_num==subj_numbers(i));
         ages(i) = YEAR_TAKEN - birthyear;
-        
-%         load('C:\datasetageing.mat', 'mask')
-%         subplot(1,2,1), subimage(AddZerosToImage(mask, AppearanceParams2Texture(app_params(i,:)', AppearanceModel))/255);
-%         subplot(1,2,2), subimage(AddZerosToImage(mask, textures(i,:))/255);
     end
     
      % Perform feature scaling
@@ -31,12 +27,14 @@ function [ Model ] = BuildAgeingModel_reg_singlelam( textures, AppearanceModel, 
     Model.Transform.scale = std(app_params);
     app_params = (app_params-repmat(Model.Transform.offset, size(app_params,1), 1))./repmat(Model.Transform.scale, size(app_params,1), 1);
 
-%     Model.mdl = fitlm([app_params, app_params.^2], ages);
     [Model.coeffs_all, Model.FitInfo] = lasso([app_params, app_params.^2], ages, 'Lambda', lambda);
     Model.offset = Model.FitInfo.Intercept;
     Model.coeffs(:,1) = Model.coeffs_all(1:end/2);
     Model.coeffs(:,2) = Model.coeffs_all(end/2+1:end);
+    
+    % remove these fields as they are no longer needed
+    Model = rmfield(Model, 'coeffs_all');
+    Model = rmfield(Model, 'FitInfo');
    
-%     Model = PolyRegression(app_params, ages, alpha, lambda);
 end
 
