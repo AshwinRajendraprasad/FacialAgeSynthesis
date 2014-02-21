@@ -7,6 +7,10 @@ function [ new_img ] = ReverseWarp( img, T, landmarks, M2D, orig_img, numChannel
     if nargin<6
         numChannels = 1;
     end
+    
+    % Need to use integer valued landmarks as necessary for creating
+    % full-size mask
+    landmarks = round(landmarks);
 
     % set landmarks so that they are the right scale for the image
     landmarks_zero(:,1) = landmarks(:,1) - min(landmarks(:,1))+1;
@@ -38,7 +42,6 @@ function [ new_img ] = ReverseWarp( img, T, landmarks, M2D, orig_img, numChannel
     % create a mask that covers the whole image and is only 1 where the
     % face is
     full_size_mask = zeros(size(orig_img,1), size(orig_img,2));
-    landmarks = round(landmarks);
     full_size_mask(min(landmarks(:,2)):max(landmarks(:,2)), min(landmarks(:,1)):max(landmarks(:,1))) = mask;
     
     % need to replicate the mask so that it selects the pixels in all
