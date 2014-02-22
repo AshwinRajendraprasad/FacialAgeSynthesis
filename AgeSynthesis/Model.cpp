@@ -10,46 +10,45 @@ Model::~Model(void)
 {
 }
 
-void Model::LoadModel(std::string path) {
-	LoadSingleModel(path);
-}
-
-void Model::LoadSingleModel(std::string path) {
-	using namespace std;
+map<string, Mat > Model::LoadSingleModel(std::string path) {
 
 	string filename = path + "\\model.txt";
 	ifstream infile(filename);
 
 	string line;
-	vector<Field> fields;
-	Field f;
+	map<string, Mat > fields;
+	Mat m = Mat();
+	string name;
 	while (getline(infile, line)) {
 		stringstream ss(line);
-		vector<float> vec;
-		// If not digit then either space (split between fields), field name or comma
-		if (!isdigit(ss.peek()) && ss.peek() != ',') {
+		vector<double>* vec = new vector<double>();
+		// If not digit then either space (split between fields), field name, comma or minus
+		if (!isdigit(ss.peek()) && ss.peek() != ',' && ss.peek() != '-') {
 			if (ss.peek() == ' ') {
-				fields.push_back(f);
-				f = Field();
+				// Insert the field into the map
+				fields.insert(pair<string, Mat>(name, m));
+				// Need to clear the matrix and set the row counter back to 0
+				m = Mat();
 			} else {
-				f.name = line;
+				name = line;
 			}
 			continue;
 		}
-		float i;
-		while (ss >> i) {
-			vec.push_back(i);
+		double val;
+		while (ss >> val) {
+			vec->push_back(val);
 
 			if (ss.peek() == ',')
 				ss.ignore();
 		}
 		// end of line, add to matrix
-		cv::Mat temp = cv::Mat(vec, true);
-		f.value.push_back(temp.t());
+		m.insertRow(vec);
 	}
+
+	return fields;
 }
 
 void main() {
 	Model model;
-	model.LoadModel("C:\\Users\\Rowan\\Documents\\Cambridge Files\\Part II project\\Model\\test\\e");
+	model.LoadSingleModel("C:\\dataset\\Models\\Model1\\AgeEst");
 }
