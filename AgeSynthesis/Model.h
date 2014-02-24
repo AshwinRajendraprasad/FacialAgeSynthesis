@@ -13,8 +13,12 @@ using namespace std;
 class Model
 {
 public:
-	Model(void);
+	Model(string path);
 	~Model(void);
 
-	map<string, cv::Mat* > LoadSingleModel(std::string path);
+	map<string, cv::Mat*> LoadSingleModel(std::string path);
+	cv::Mat* getField(string name);
+
+private:
+	map<string, cv::Mat*> fields;
 };

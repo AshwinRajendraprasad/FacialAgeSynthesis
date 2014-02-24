@@ -1,8 +1,10 @@
 #include "Model.h"
 
 
-Model::Model(void)
+Model::Model(string path)
 {
+	// Load model.txt into fields
+	fields = LoadSingleModel(path);
 }
 
 
@@ -47,6 +49,19 @@ map<string, cv::Mat* > Model::LoadSingleModel(std::string path) {
 	}
 
 	return fields;
+}
+
+cv::Mat* Model::getField(string name)
+{
+	map<string, cv::Mat*>::const_iterator it = fields.find(name);
+	if (it != fields.end())
+	{
+		// Found element
+		return it->second;
+	}
+	else
+		// If not found then return NULL, the caller needs to check whether pointer is NULL
+		return NULL;
 }
 
 void main() {

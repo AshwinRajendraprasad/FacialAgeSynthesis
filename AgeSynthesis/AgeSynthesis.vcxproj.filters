@@ -21,12 +21,18 @@
     <ClInclude Include="Mat.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="TransModel.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Model.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="Mat.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="TransModel.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
