@@ -16,5 +16,5 @@ public:
 	Model(void);
 	~Model(void);
 
-	map<string, Mat > LoadSingleModel(std::string path);
+	map<string, cv::Mat* > LoadSingleModel(std::string path);
 };

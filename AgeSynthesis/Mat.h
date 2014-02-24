@@ -1,6 +1,7 @@
 #pragma once
 
 #include <vector>
+#include <cv.h>
 
 using namespace std;
 
@@ -11,7 +12,7 @@ public:
 	~Mat(void);
 
 	void insertRow(vector<double>* row);
-	void clear();
+	cv::Mat* convertToCVMat();
 
 private:
 	vector<vector<double>* >* m;

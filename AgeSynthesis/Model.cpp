@@ -10,13 +10,13 @@ Model::~Model(void)
 {
 }
 
-map<string, Mat > Model::LoadSingleModel(std::string path) {
+map<string, cv::Mat* > Model::LoadSingleModel(std::string path) {
 
 	string filename = path + "\\model.txt";
 	ifstream infile(filename);
 
 	string line;
-	map<string, Mat > fields;
+	map<string, cv::Mat* > fields;
 	Mat m = Mat();
 	string name;
 	while (getline(infile, line)) {
@@ -26,10 +26,11 @@ map<string, Mat > Model::LoadSingleModel(std::string path) {
 		if (!isdigit(ss.peek()) && ss.peek() != ',' && ss.peek() != '-') {
 			if (ss.peek() == ' ') {
 				// Insert the field into the map
-				fields.insert(pair<string, Mat>(name, m));
+				cv::Mat* cvMat = m.convertToCVMat();
+				fields.insert(pair<string, cv::Mat*>(name, cvMat));
 				// Need to clear the matrix and set the row counter back to 0
 				m = Mat();
-			} else {
+			} else {  // Must be a string, so its the name of the field
 				name = line;
 			}
 			continue;
