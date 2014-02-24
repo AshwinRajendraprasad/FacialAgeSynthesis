@@ -24,6 +24,12 @@
     <ClInclude Include="TransModel.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="AgeSynthModel.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="AgeingModel.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Model.cpp">
@@ -33,6 +39,12 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="TransModel.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="AgeSynthModel.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="AgeingModel.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>

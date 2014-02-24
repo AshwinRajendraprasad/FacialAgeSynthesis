@@ -13,6 +13,7 @@ using namespace std;
 class Model
 {
 public:
+	Model(void);
 	Model(string path);
 	~Model(void);
 

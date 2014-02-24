@@ -14,7 +14,8 @@ function WriteModelToCSVs(Model, path)
             fid = fopen(filename, 'at+');
             fprintf(fid, '%s\n', names{i});
             fclose(fid);
-            dlmwrite(filename, field, '-append', 'newline', 'pc');
+            % save with 16 digits of precision (16 s.f.)
+            dlmwrite(filename, field, '-append', 'newline', 'pc', 'precision', 16);
             dlmwrite(filename, ' ', '-append', 'newline', 'pc');
         end
     end

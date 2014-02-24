@@ -64,11 +64,15 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClInclude Include="AgeingModel.h" />
+    <ClInclude Include="AgeSynthModel.h" />
     <ClInclude Include="Mat.h" />
     <ClInclude Include="Model.h" />
     <ClInclude Include="TransModel.h" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="AgeingModel.cpp" />
+    <ClCompile Include="AgeSynthModel.cpp" />
     <ClCompile Include="Mat.cpp" />
     <ClCompile Include="Model.cpp" />
     <ClCompile Include="TransModel.cpp" />

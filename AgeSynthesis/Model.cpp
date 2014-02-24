@@ -7,6 +7,9 @@ Model::Model(string path)
 	fields = LoadSingleModel(path);
 }
 
+Model::Model(void)
+{
+}
 
 Model::~Model(void)
 {
@@ -64,7 +67,3 @@ cv::Mat* Model::getField(string name)
 		return NULL;
 }
 
-void main() {
-	Model model;
-	model.LoadSingleModel("C:\\dataset\\Models\\Model1\\AgeEst");
-}
