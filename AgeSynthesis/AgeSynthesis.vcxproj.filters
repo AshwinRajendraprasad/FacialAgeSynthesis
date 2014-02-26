@@ -30,6 +30,12 @@
     <ClInclude Include="AgeingModel.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="AppModel.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="AgeEstModel.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Model.cpp">
@@ -45,6 +51,12 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="AgeingModel.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="AppModel.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="AgeEstModel.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>

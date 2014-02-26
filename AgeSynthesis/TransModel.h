@@ -15,17 +15,20 @@ public:
 	{
 	public:
 		Transform(void);
-		Transform(double s, double o);
+		Transform(cv::Mat s, cv::Mat o);
 
-		double getScale();
-		double getOffset();
+		cv::Mat getScale();
+		cv::Mat getOffset();
 		
 	private:
-		double scale;
-		double offset;
+		cv::Mat scale;
+		cv::Mat offset;
 	};
 
-	Transform getTransform();
+	virtual Transform getTransform();
+
+protected:
+	void setTransform(cv::Mat s, cv::Mat o);
 
 private:
 	Transform transform;

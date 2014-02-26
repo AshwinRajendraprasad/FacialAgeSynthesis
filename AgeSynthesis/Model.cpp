@@ -3,6 +3,7 @@
 
 Model::Model(string path)
 {
+	cout << "Loading basic model" << endl;
 	// Load model.txt into fields
 	fields = LoadSingleModel(path);
 }

@@ -1,6 +1,9 @@
 #pragma once
 #include "AgeSynthModel.h"
-#include "TransModel.h"
+#include "AgeEstModel.h"
+#include "AppModel.h"
+
+//#include <PAW.h>
 
 using namespace std;
 
@@ -11,13 +14,18 @@ public:
 	AgeingModel(string path);
 	~AgeingModel(void);
 
-	TransModel getAppModel();
-	TransModel getAgeEstModel();
+	AppModel getAppModel();
+	AgeEstModel getAgeEstModel();
 	AgeSynthModel getAgeSynthModel();
 
+	cv::Mat fitImageToAppModel(cv::Mat texture);
+
+	// Loads the model from path and prints the fields expected to be there
+	static void testLoading(string path);
+
 private:
-	TransModel appModel;
-	TransModel ageEstModel;
+	AppModel appModel;
+	AgeEstModel ageEstModel;
 	AgeSynthModel ageSynthModel; 
 };
 

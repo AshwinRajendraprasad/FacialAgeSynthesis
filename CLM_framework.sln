@@ -24,6 +24,10 @@ EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "ConsolePuppets", "exe\ConsolePuppets\ConsolePuppets.vcxproj", "{DF6B383D-260B-4549-9081-1026165B131C}"
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "AgeSynthesis", "AgeSynthesis\AgeSynthesis.vcxproj", "{CC798F29-9BCE-4C5E-9A73-70ED068382C8}"
+	ProjectSection(ProjectDependencies) = postProject
+		{BDC1D107-DE17-4705-8E7B-CDDE8BFB2BF8} = {BDC1D107-DE17-4705-8E7B-CDDE8BFB2BF8}
+		{1E225063-3390-4D4D-A7A8-825F2F38A952} = {1E225063-3390-4D4D-A7A8-825F2F38A952}
+	EndProjectSection
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

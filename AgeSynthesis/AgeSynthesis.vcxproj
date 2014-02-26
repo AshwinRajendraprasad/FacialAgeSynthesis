@@ -40,11 +40,14 @@
     <Import Project="..\lib\3rdParty\boost\boost.props" />
   </ImportGroup>
   <PropertyGroup Label="UserMacros" />
-  <PropertyGroup />
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+    <IncludePath>$(VCInstallDir)include;$(VCInstallDir)atlmfc\include;$(WindowsSdkDir)include;$(FrameworkSDKDir)\include;</IncludePath>
+  </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <ClCompile>
       <WarningLevel>Level3</WarningLevel>
       <Optimization>Disabled</Optimization>
+      <AdditionalIncludeDirectories>$(SolutionDir)\lib\local\CLM\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <GenerateDebugInformation>true</GenerateDebugInformation>
@@ -64,18 +67,27 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClInclude Include="AgeEstModel.h" />
     <ClInclude Include="AgeingModel.h" />
     <ClInclude Include="AgeSynthModel.h" />
+    <ClInclude Include="AppModel.h" />
     <ClInclude Include="Mat.h" />
     <ClInclude Include="Model.h" />
     <ClInclude Include="TransModel.h" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="AgeEstModel.cpp" />
     <ClCompile Include="AgeingModel.cpp" />
     <ClCompile Include="AgeSynthModel.cpp" />
+    <ClCompile Include="AppModel.cpp" />
     <ClCompile Include="Mat.cpp" />
     <ClCompile Include="Model.cpp" />
     <ClCompile Include="TransModel.cpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\lib\local\CLM\CLM.vcxproj">
+      <Project>{bdc1d107-de17-4705-8e7b-cdde8bfb2bf8}</Project>
+    </ProjectReference>
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
