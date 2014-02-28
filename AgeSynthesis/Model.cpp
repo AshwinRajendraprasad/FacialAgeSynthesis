@@ -33,6 +33,12 @@ map<string, cv::Mat* > Model::LoadSingleModel(std::string path) {
 			if (ss.peek() == ' ') {
 				// Insert the field into the map
 				cv::Mat* cvMat = m.convertToCVMat();
+				//// Transpose the modes matrix as this is how it is used
+				//if (name=="modes")
+				//{
+				//	cv::Mat tmp = cvMat->t();
+				//	cvMat = &tmp;
+				//}
 				fields.insert(pair<string, cv::Mat*>(name, cvMat));
 				// Need to clear the matrix and set the row counter back to 0
 				m = Mat();

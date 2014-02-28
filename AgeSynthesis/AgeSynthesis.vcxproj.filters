@@ -36,6 +36,9 @@
     <ClInclude Include="AgeEstModel.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="FieldNames.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Model.cpp">
@@ -57,6 +60,12 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="AgeEstModel.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Testing.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="FieldNames.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>

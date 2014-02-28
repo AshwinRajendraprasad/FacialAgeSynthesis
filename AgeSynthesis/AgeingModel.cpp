@@ -31,58 +31,65 @@ AgeSynthModel AgeingModel::getAgeSynthModel()
 	return ageSynthModel;
 }
 
-cv::Mat AgeingModel::fitImageToAppModel(cv::Mat texture)
+
+cv::Mat AgeingModel::changeFaceAge(cv::Mat appParams, int targetAge, char gender)
 {
-	/*Model m = Model("C:\\Users\\Rowan\\Documents\\Cambridge Files\\Part II project\\Model\\shape");
-	cv::Mat neutralShape = *m.getField("neutral");
-	m = Model("C:\\Users\\Rowan\\Documents\\Cambridge Files\\Part II project\\Test face images");
-	cv::Mat shape = *m.getField("shape");*/
-	
-	cv::Mat modes = *getAppModel().getField("modes");
-	cv::Mat meanTexture = *getAppModel().getField("mean_texture");
+	// Get the correct gender model
+	AgeSynthModel::GenderModel simple;
+	if (gender=='m')
+		simple = getAgeSynthModel().getMale();
+	else if (gender == 'f')
+		simple = getAgeSynthModel().getFemale();
+	else
+		throw "Gender must be either 'm' or 'f'";
 
-	cv::Mat b = modes.t() * ((texture - getAppModel().getOffset())/getAppModel().getScale() - meanTexture).t();
+	// Add on the correct amount of the correct del_b to change the face parameters
+	double del_age = targetAge - getAgeEstModel().predictAge(appParams);
+	cv::Mat agedParams;
+	if (del_age < 0)
+	{
+		cv::Mat factor = *simple.getYounger().getField(FieldNames::FAC);
+		// Factor is just one value
+		agedParams = appParams + (-del_age * factor.at<double>(0,0)) * *simple.getYounger().getField(FieldNames::DEL_B);
+	}
+	else
+	{
+		cv::Mat factor = *simple.getOlder().getField(FieldNames::FAC);
+		// Factor is just one value
+		agedParams = appParams + (del_age * factor.at<double>(0,0)) * *simple.getOlder().getField(FieldNames::DEL_B);
+	}
 
-	return b;
+	// Clamp the model parameters so they are within 3 standard deviations
+	cv::Mat stddev;
+	cv::sqrt(*getAppModel().getField(FieldNames::APP_VARIANCES), stddev);
+	agedParams = clamp(agedParams, stddev*3, GREATER_THAN);
+	agedParams = clamp(agedParams, stddev*-3, LESS_THAN);
+
+	return agedParams;
 }
 
-void AgeingModel::testLoading(string path)
+cv::Mat AgeingModel::clamp(cv::Mat in, cv::Mat clampVals, AgeingModel::CompOper oper)
 {
-	//TODO: Should list everything in each model
+	// Find which elements need changing based on the operator specified
+	cv::Mat comp;
+	switch (oper)
+	{
+	case LESS_THAN:
+		comp = in < clampVals;
+		break;
+	case GREATER_THAN:
+		comp = in > clampVals;
+		break;
+	}
 
-	// Testing that the model loads
-	// The output of this is compared to the variables in Matlab - form of unit testing
-	AgeingModel am = AgeingModel(path);
+	for (int i=0; i<in.rows; i++)
+	{
+		// comp is 255 when need to change element
+		if (comp.at<char>(i,0) == char(255))
+		{
+			in.at<double>(i,0) = clampVals.at<double>(i,0);
+		}
+	}
 
-	cout << "AppModel.mean_texture = " << endl << *am.getAppModel().getField("mean_texture") << endl;
-	cout << "AppModel.modes = " << endl << *am.getAppModel().getField("modes") << endl;
-	cout << "AppModel.mask = " << endl << *am.getAppModel().getField("mask") << endl;
-	cout << "AppModel.variances = " << endl << *am.getAppModel().getField("variances") << endl;
-	cout << "AppModel.Transform.scale = " << endl << am.getAppModel().getScale() << endl;
-	cout << "AppModel.Transform.offset = " << endl << am.getAppModel().getOffset() << endl << endl;
-
-	cout << "AgeEst.offset = " << endl << *am.getAgeEstModel().getField("offset") << endl;
-	cout << "AgeEst.coeffs = " << endl << *am.getAgeEstModel().getField("coeffs") << endl;
-	cout << "AgeEst.Transform.scale = " << endl << am.getAgeEstModel().getTransform().getScale() << endl;
-	cout << "AgeEst.Transform.offset = " << endl << am.getAgeEstModel().getTransform().getOffset() << endl << endl;
-
-	cout << "AgeSynth.male.younger.del_b = " << endl << *am.getAgeSynthModel().getMale().getYounger().getField("del_b") << endl;
-	cout << "AgeSynth.male.younger.fac = " << endl << *am.getAgeSynthModel().getMale().getYounger().getField("fac") << endl;
-	cout << "AgeSynth.male.older.del_b = " << endl << *am.getAgeSynthModel().getMale().getOlder().getField("del_b") << endl;
-	cout << "AgeSynth.male.older.fac = " << endl << *am.getAgeSynthModel().getMale().getOlder().getField("fac")<< endl;
-	cout << "AgeSynth.female.younger.del_b = " << endl << *am.getAgeSynthModel().getFemale().getYounger().getField("del_b") << endl;
-	cout << "AgeSynth.female.younger.fac = " << endl << *am.getAgeSynthModel().getFemale().getYounger().getField("fac") << endl;
-	cout << "AgeSynth.female.older.del_b = " << endl << *am.getAgeSynthModel().getFemale().getOlder().getField("del_b") << endl;
-	cout << "AgeSynth.female.older.fac = " << endl << *am.getAgeSynthModel().getFemale().getOlder().getField("fac")<< endl;
-}
-
-void main()
-{
-	AgeingModel::testLoading("C:\\Users\\Rowan\\Documents\\Cambridge Files\\Part II project\\Model\\test3");
-
-	/*AgeingModel am = AgeingModel("C:\\dataset\\Models\\Model3");
-	Model m = Model("C:\\Users\\Rowan\\Documents\\Cambridge Files\\Part II project\\Model\\image");
-	cv::Mat texture = *m.getField("texture");
-
-	am.fitImageToAppModel(texture);*/
+	return in;
 }
