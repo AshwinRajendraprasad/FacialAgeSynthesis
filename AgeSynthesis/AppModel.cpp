@@ -62,3 +62,55 @@ cv::Mat AppModel::appParamsToTexture(cv::Mat appParams)
 
 	return texture;
 }
+
+cv::Mat AppModel::imageToTexture(cv::Mat image)
+{
+	cv::Mat mask = *getField(FieldNames::APP_MASK);
+
+	if (mask.size != image.size)
+		throw "Mask and image are different sizes";
+
+	int numPixels = cv::sum(mask)[0];
+	cv::Mat texture = cv::Mat(1, numPixels, CV_64F);
+
+	int tCounter = 0;  //Counter to know which element in the texture to fill next
+	// For each element in image, if the mask is a 1 then put it into the texture, else do nothing.
+	for (int i=0; i<image.rows; i++)
+	{
+		for (int j=0; j<image.cols; j++)
+		{
+			if (mask.at<double>(i,j) == 1)
+			{
+				texture.at<double>(tCounter) = image.at<double>(i,j);
+				tCounter++;
+			}
+		}
+	}
+
+	return texture;
+
+}
+
+cv::Mat AppModel::textureToImage(cv::Mat texture)
+{
+	cv::Mat mask = *getField(FieldNames::APP_MASK);
+
+	// Create an image the same size as the mask
+	cv::Mat image = cv::Mat::zeros(mask.rows, mask.cols, CV_64F);
+
+	int tCounter = 0;
+	// For each element in the image, if the mask is 1 then put the texture value in, else leave as 0
+	for (int i=0; i<image.rows; i++)
+	{
+		for (int j=0; j<image.cols; j++)
+		{
+			if (mask.at<double>(i,j) == 1)
+			{
+				image.at<double>(i,j) = texture.at<double>(tCounter);
+				tCounter++;
+			}
+		}
+	}
+
+	return image;
+}

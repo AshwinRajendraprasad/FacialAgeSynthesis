@@ -190,6 +190,29 @@ bool testAgeSynth(string path)
 	return eq;
 }
 
+bool testImageTextureConv(string path)
+{
+	AgeingModel test = AgeingModel(path);
+
+	bool eq = true;
+
+	// Input would have zeros where mask is 0 as thats how it would be made
+	double testInput[3][4] = {{0,2,3,0}, {0,0,7.1,0}, {0,0,3.1,0}};
+	cv::Mat in = cv::Mat(3, 4, CV_64F, testInput);
+
+	cv::Mat out = test.getAppModel().imageToTexture(in);
+
+	double expT[4] = {2,3,7.1,3.1};
+	cv::Mat expTex = cv::Mat(1, 4, CV_64F, expT);
+	eq = eq & matEqualWithinTol(out, expTex, TOL);
+
+	// test whether goes back to original as should
+	cv::Mat im = test.getAppModel().textureToImage(out);
+	eq = eq & matEqualWithinTol(im, in, TOL);
+
+	return eq;
+}
+
 void main()
 {
 	bool eqLoad = testLoading("C:\\Users\\Rowan\\Documents\\Cambridge Files\\Part II project\\Model\\test4");
@@ -197,12 +220,14 @@ void main()
 	bool eqP2T = testParams2Texture("C:\\Users\\Rowan\\Documents\\Cambridge Files\\Part II project\\Model\\test4");
 	bool eqEst = testAgeEst("C:\\Users\\Rowan\\Documents\\Cambridge Files\\Part II project\\Model\\test4");
 	bool eqSynth = testAgeSynth("C:\\Users\\Rowan\\Documents\\Cambridge Files\\Part II project\\Model\\test4");
+	bool eqImTexConv = testImageTextureConv("C:\\Users\\Rowan\\Documents\\Cambridge Files\\Part II project\\Model\\test4");
 
 	cout << endl << "Passed load test: " << eqLoad << endl;
 	cout << "Passed fitting to appearance model test: " << eqFit << endl;
-	cout << "Passeed converting from appearance model parameters to texture test: " << eqP2T << endl;
+	cout << "Passed converting from appearance model parameters to texture test: " << eqP2T << endl;
 	cout << "Passed age estimation test: " << eqEst << endl;
 	cout << "Passed age synthesis test: " << eqSynth << endl;
+	cout << "Passed image texture conversion test: " << eqImTexConv << endl;
 
 	//AgeingModel test = AgeingModel("C:\\Users\\Rowan\\Documents\\Cambridge Files\\Part II project\\Model\\test4");
 	/*Model m = Model("C:\\Users\\Rowan\\Documents\\Cambridge Files\\Part II project\\Model\\image");
