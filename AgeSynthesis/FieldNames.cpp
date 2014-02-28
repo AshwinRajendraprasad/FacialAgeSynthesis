@@ -12,3 +12,4 @@ const string FieldNames::APP_MODES_INV = "modes_inv";
 const string FieldNames::APP_MEAN_T = "mean_texture";
 const string FieldNames::APP_VARIANCES = "variances";
 const string FieldNames::APP_MODES = "modes";
+const string FieldNames::APP_MASK = "mask";

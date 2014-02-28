@@ -18,5 +18,6 @@ public:
 	const static string APP_MEAN_T;
 	const static string APP_VARIANCES;
 	const static string APP_MODES;
+	const static string APP_MASK;
 };
 

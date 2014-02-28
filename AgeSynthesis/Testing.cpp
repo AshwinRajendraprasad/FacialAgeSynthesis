@@ -1,4 +1,5 @@
 #include "AgeingModel.h"
+#include "FieldNames.h"
 
 using namespace std;
 
@@ -24,36 +25,89 @@ bool matEqualWithinTol(cv::Mat a, cv::Mat b, double tol)
 }
 
 // Loads the model from path and prints the fields expected to be there
-void testLoading(string path)
+bool testLoading(string path)
 {
 	//TODO: Should list everything in each model
-	//TODO: Should compare automatically - like testing fit
 
 	// Testing that the model loads
 	// The output of this is compared to the variables in Matlab - form of unit testing
 	AgeingModel am = AgeingModel(path);
 
-	cout << "AppModel.mean_texture = " << endl << *am.getAppModel().getField("mean_texture") << endl;
-	cout << "AppModel.modes = " << endl << *am.getAppModel().getField("modes") << endl;
-	cout << "AppModel.modes_inv = " << endl << *am.getAppModel().getField("modes_inv") << endl;
-	cout << "AppModel.mask = " << endl << *am.getAppModel().getField("mask") << endl;
-	cout << "AppModel.variances = " << endl << *am.getAppModel().getField("variances") << endl;
-	cout << "AppModel.Transform.scale = " << endl << am.getAppModel().getScale() << endl;
-	cout << "AppModel.Transform.offset = " << endl << am.getAppModel().getOffset() << endl << endl;
+	bool eq = true;
 
-	cout << "AgeEst.offset = " << endl << *am.getAgeEstModel().getField("offset") << endl;
-	cout << "AgeEst.coeffs = " << endl << *am.getAgeEstModel().getField("coeffs") << endl;
-	cout << "AgeEst.Transform.scale = " << endl << am.getAgeEstModel().getTransform().getScale() << endl;
-	cout << "AgeEst.Transform.offset = " << endl << am.getAgeEstModel().getTransform().getOffset() << endl << endl;
+	// Appearance model
+	double meanT[4] = {54.32, 5234.5423, 63.532, 543.6453};
+	cv::Mat expMeanT = cv::Mat(1, 4, CV_64F, meanT);
+	eq = eq && matEqualWithinTol(*am.getAppModel().getField(FieldNames::APP_MEAN_T), expMeanT, TOL);
 
-	cout << "AgeSynth.male.younger.del_b = " << endl << *am.getAgeSynthModel().getMale().getYounger().getField("del_b") << endl;
-	cout << "AgeSynth.male.younger.fac = " << endl << *am.getAgeSynthModel().getMale().getYounger().getField("fac") << endl;
-	cout << "AgeSynth.male.older.del_b = " << endl << *am.getAgeSynthModel().getMale().getOlder().getField("del_b") << endl;
-	cout << "AgeSynth.male.older.fac = " << endl << *am.getAgeSynthModel().getMale().getOlder().getField("fac")<< endl;
-	cout << "AgeSynth.female.younger.del_b = " << endl << *am.getAgeSynthModel().getFemale().getYounger().getField("del_b") << endl;
-	cout << "AgeSynth.female.younger.fac = " << endl << *am.getAgeSynthModel().getFemale().getYounger().getField("fac") << endl;
-	cout << "AgeSynth.female.older.del_b = " << endl << *am.getAgeSynthModel().getFemale().getOlder().getField("del_b") << endl;
-	cout << "AgeSynth.female.older.fac = " << endl << *am.getAgeSynthModel().getFemale().getOlder().getField("fac")<< endl;
+	double modes[4][3] = {{45.36, 653.53, 6543.35}, {534.6, 52.62, 764.62}, {3.4, 7.2, 3.5}, {8.4, 3.8, 1.9}};
+	cv::Mat expModes = cv::Mat(4, 3, CV_64F, modes);
+	eq = eq && matEqualWithinTol(*am.getAppModel().getField(FieldNames::APP_MODES), expModes, TOL);
+
+	double variances[3] = {523.63, 5432.76, 5431.6754};
+	cv::Mat expVar = cv::Mat(3, 1, CV_64F, variances);
+	eq = eq && matEqualWithinTol(*am.getAppModel().getField(FieldNames::APP_VARIANCES), expVar, TOL);
+
+	cv::Mat expModesInv = expModes.t();
+	eq = eq && matEqualWithinTol(*am.getAppModel().getField(FieldNames::APP_MODES_INV), expModesInv, TOL);
+
+	double mask[3][4] = {{0,1,1,0}, {0,0,1,0}, {0,0,1,0}};
+	cv::Mat expMask = cv::Mat(3, 4, CV_64F, mask);
+	eq = eq && matEqualWithinTol(*am.getAppModel().getField(FieldNames::APP_MASK), expMask, TOL);
+
+	double expAppScale = 10.4;
+	eq = eq && (abs(expAppScale - am.getAppModel().getScale()) < TOL);
+	double expAppOffset = 11.5;
+	eq = eq && (abs(expAppOffset - am.getAppModel().getOffset()) < TOL);
+
+
+	// Age est model
+	double expOffset = 214.643;
+	eq = eq && (abs(expOffset - am.getAgeEstModel().getField(FieldNames::EST_OFFSET)->at<double>(0,0)) < TOL);
+
+	double coeffs[2][3] = {{543.3630, 543.5340, 324}, {435.2340, 534.63, 5423.5}};
+	cv::Mat expCoeffs = cv::Mat(2, 3, CV_64F, coeffs);
+	eq = eq && matEqualWithinTol(*am.getAgeEstModel().getField(FieldNames::EST_COEFFS), expCoeffs, TOL);
+
+	double tranScale[3] = {4.6,3.3,7.9};
+	cv::Mat expTransScale = cv::Mat(3, 1, CV_64F, tranScale);
+	eq = eq && matEqualWithinTol(am.getAgeEstModel().getTransform().getScale(), expTransScale, TOL);
+
+	double tranOffset[3] = {2.8,1.9,4.6};
+	cv::Mat expTransOffset = cv::Mat(3, 1, CV_64F, tranOffset);
+	eq = eq && matEqualWithinTol(am.getAgeEstModel().getTransform().getOffset(), expTransOffset, TOL);
+
+
+	// Age synth model
+	double myDelB[3] = {543.25, 5436.432, 5423.87};
+	cv::Mat expMYDelB = cv::Mat(3, 1, CV_64F, myDelB);
+	eq = eq && matEqualWithinTol(*am.getAgeSynthModel().getMale().getYounger().getField(FieldNames::DEL_B), expMYDelB, TOL);
+
+	double expMYFac = 4.65;
+	eq = eq && (abs(expMYFac - am.getAgeSynthModel().getMale().getYounger().getField(FieldNames::FAC)->at<double>(0,0)) < TOL);
+
+	double moDelB[3] = {132.25, 12.432, 456.87};
+	cv::Mat expMODelB = cv::Mat(3, 1, CV_64F, moDelB);
+	eq = eq && matEqualWithinTol(*am.getAgeSynthModel().getMale().getOlder().getField(FieldNames::DEL_B), expMODelB, TOL);
+
+	double expMOFac = 7.34;
+	eq = eq && (abs(expMOFac - am.getAgeSynthModel().getMale().getOlder().getField(FieldNames::FAC)->at<double>(0,0)) < TOL);
+
+	double fyDelB[3] = {43.25, 573.432, 754.87};
+	cv::Mat expFYDelB = cv::Mat(3, 1, CV_64F, fyDelB);
+	eq = eq && matEqualWithinTol(*am.getAgeSynthModel().getFemale().getYounger().getField(FieldNames::DEL_B), expFYDelB, TOL);
+
+	double expFYFac = 1.65;
+	eq = eq && (abs(expFYFac - am.getAgeSynthModel().getFemale().getYounger().getField(FieldNames::FAC)->at<double>(0,0)) < TOL);
+
+	double foDelB[3] = {79.25, 46.432, 46312.87};
+	cv::Mat expFODelB = cv::Mat(3, 1, CV_64F, foDelB);
+	eq = eq && matEqualWithinTol(*am.getAgeSynthModel().getFemale().getOlder().getField(FieldNames::DEL_B), expFODelB, TOL);
+
+	double expFOFac = 3143.654364861234;
+	eq = eq && (abs(expFOFac - am.getAgeSynthModel().getFemale().getOlder().getField(FieldNames::FAC)->at<double>(0,0)) < TOL);
+
+	return eq;
 }
 
 // Prints the output of fit image to model.  Needs to be checked for equality to Matlab answer
@@ -94,7 +148,7 @@ bool testParams2Texture(string path)
 
 	bool eq = matEqualWithinTol(out, exp, TOL);
 
-	cout << "params2Texture: " << out << endl;
+	//cout << "params2Texture: " << out << endl;
 
 	return eq;
 }
@@ -138,12 +192,13 @@ bool testAgeSynth(string path)
 
 void main()
 {
-	testLoading("C:\\Users\\Rowan\\Documents\\Cambridge Files\\Part II project\\Model\\test4");
+	bool eqLoad = testLoading("C:\\Users\\Rowan\\Documents\\Cambridge Files\\Part II project\\Model\\test4");
 	bool eqFit = testFitImage("C:\\Users\\Rowan\\Documents\\Cambridge Files\\Part II project\\Model\\test4");
 	bool eqP2T = testParams2Texture("C:\\Users\\Rowan\\Documents\\Cambridge Files\\Part II project\\Model\\test4");
 	bool eqEst = testAgeEst("C:\\Users\\Rowan\\Documents\\Cambridge Files\\Part II project\\Model\\test4");
 	bool eqSynth = testAgeSynth("C:\\Users\\Rowan\\Documents\\Cambridge Files\\Part II project\\Model\\test4");
 
+	cout << endl << "Passed load test: " << eqLoad << endl;
 	cout << "Passed fitting to appearance model test: " << eqFit << endl;
 	cout << "Passeed converting from appearance model parameters to texture test: " << eqP2T << endl;
 	cout << "Passed age estimation test: " << eqEst << endl;
