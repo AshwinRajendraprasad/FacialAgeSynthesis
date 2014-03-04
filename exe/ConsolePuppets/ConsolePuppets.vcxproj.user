@@ -10,6 +10,6 @@
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <LocalDebuggerWorkingDirectory>$(SolutionDir)$(Configuration)\</LocalDebuggerWorkingDirectory>
     <DebuggerFlavor>WindowsLocalDebugger</DebuggerFlavor>
-    <LocalDebuggerCommandArguments>-mloc "../lib/local/clm/model/main_svr.txt"</LocalDebuggerCommandArguments>
+    <LocalDebuggerCommandArguments>-mloc "model/main_svr.txt"</LocalDebuggerCommandArguments>
   </PropertyGroup>
 </Project>

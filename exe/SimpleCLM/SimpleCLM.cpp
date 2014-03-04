@@ -322,6 +322,10 @@ int main (int argc, char **argv)
 		{
 			INFO_STREAM( "Attempting to capture from device: " << device );
 			vCap = VideoCapture( device );
+
+			// Read a first frame often empty in camera
+			Mat img;
+			vCap >> img;
 		}
 
 		if( !vCap.isOpened() ) FATAL_STREAM( "Failed to open video source" );

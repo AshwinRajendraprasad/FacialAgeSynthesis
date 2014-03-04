@@ -281,8 +281,8 @@ int main (int argc, char **argv)
 						orientations.push_back(Vec3d(0,0,0));
 						orientations.push_back(Vec3d(0,0.5236,0));
 						orientations.push_back(Vec3d(0,-0.5236,0));
-						//orientations.push_back(Vec3d(0.5236,0,0));
-						//orientations.push_back(Vec3d(-0.5236,0,0));
+						orientations.push_back(Vec3d(0.5236,0,0));
+						orientations.push_back(Vec3d(-0.5236,0,0));
 				
 						double best_lhood;
 						Mat best_shape;
@@ -397,8 +397,8 @@ int main (int argc, char **argv)
 				orientations.push_back(Vec3d(0,0,0));
 				orientations.push_back(Vec3d(0,0.5236,0));
 				orientations.push_back(Vec3d(0,-0.5236,0));
-				//orientations.push_back(Vec3d(0.5236,0,0));
-				//orientations.push_back(Vec3d(-0.5236,0,0));
+				orientations.push_back(Vec3d(0.5236,0,0));
+				orientations.push_back(Vec3d(-0.5236,0,0));
 				
 				double best_lhood;
 				Mat best_shape;
