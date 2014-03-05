@@ -17,7 +17,7 @@ public:
 	AgeEstModel getAgeEstModel();
 	AgeSynthModel getAgeSynthModel();
 
-	// The functions needed to perform age synthesis
+	// The function needed to perform age synthesis - returns parameters, not an image/texture
 	cv::Mat changeFaceAge(cv::Mat appParams, int targetAge, char gender);
 
 	enum CompOper { LESS_THAN, GREATER_THAN };

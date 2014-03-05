@@ -17,9 +17,13 @@ public:
 	Model(string path);
 	~Model(void);
 
-	map<string, cv::Mat*> LoadSingleModel(std::string path);
-	cv::Mat* getField(string name);
+	map<string, cv::Mat> LoadSingleModel(std::string path);
+	// dealing with binary files to attempt to speed up loading
+	map<string, cv::Mat> LoadSingleModelB(std::string path);
+	cv::Mat getField(string name);
 
 private:
-	map<string, cv::Mat*> fields;
+	int bytes2int(char* bytes);
+	double bytes2double(char* bytes);
+	map<string, cv::Mat> fields;
 };

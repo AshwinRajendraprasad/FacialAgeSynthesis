@@ -48,20 +48,20 @@ cv::Mat AgeingModel::changeFaceAge(cv::Mat appParams, int targetAge, char gender
 	cv::Mat agedParams;
 	if (del_age < 0)
 	{
-		cv::Mat factor = *simple.getYounger().getField(FieldNames::FAC);
+		cv::Mat factor = simple.getYounger().getField(FieldNames::FAC);
 		// Factor is just one value
-		agedParams = appParams + (-del_age * factor.at<double>(0,0)) * *simple.getYounger().getField(FieldNames::DEL_B);
+		agedParams = appParams + (-del_age * factor.at<double>(0,0)) * simple.getYounger().getField(FieldNames::DEL_B);
 	}
 	else
 	{
-		cv::Mat factor = *simple.getOlder().getField(FieldNames::FAC);
+		cv::Mat factor = simple.getOlder().getField(FieldNames::FAC);
 		// Factor is just one value
-		agedParams = appParams + (del_age * factor.at<double>(0,0)) * *simple.getOlder().getField(FieldNames::DEL_B);
+		agedParams = appParams + (del_age * factor.at<double>(0,0)) * simple.getOlder().getField(FieldNames::DEL_B);
 	}
 
 	// Clamp the model parameters so they are within 3 standard deviations
 	cv::Mat stddev;
-	cv::sqrt(*getAppModel().getField(FieldNames::APP_VARIANCES), stddev);
+	cv::sqrt(getAppModel().getField(FieldNames::APP_VARIANCES), stddev);
 	agedParams = clamp(agedParams, stddev*3, GREATER_THAN);
 	agedParams = clamp(agedParams, stddev*-3, LESS_THAN);
 
