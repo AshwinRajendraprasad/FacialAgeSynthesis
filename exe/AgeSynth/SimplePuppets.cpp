@@ -106,7 +106,98 @@ void readFromStock(int c ){
 
 }
 
+Mat warpImage(Mat img)
+{
+	// Set up the PAW
+	Mat localShape;
+	Mat newshape;
+	Mat globalShape;
 
+	clmModel._clm._plocal.copyTo(localShape);
+	clmModel._clm._pglobl.copyTo(globalShape);
+
+	clmModel._clm._pdm.CalcShape2D(newshape, localShape, globalShape); //calculate new shape
+
+	ParseToPAW(newshape, localShape, globalShape);
+
+	// Find out which orientation head is so that can use the correct warp
+	Vec3d orientation;
+	orientation(0) = globalShape.at<double>(1);
+	orientation(1) = globalShape.at<double>(2);
+	orientation(2) = globalShape.at<double>(3);
+
+	int viewid = clmModel._det_valid.GetViewId(orientation);
+
+	cv::Mat neutralshape(newshape.rows, 1, CV_64FC1);
+	clmModel._det_valid._fcheck[viewid]._paw.WarpToNeutral(img, newshape, neutralshape);		//warp to neutral (in CLM/PAW.cc)
+
+	return img;
+}
+
+
+void ageing(Mat face, int targetAge, bool warp)
+{
+	Mat faceImg;
+	// If the image needs to be warped to neutral then do so
+	if (warp)
+		faceImg = warpImage(face);
+	else
+	{
+		//Mat img;
+		//vCap >> img;
+		//faceImg = warpImage(img);
+		face.copyTo(faceImg);
+	}
+
+	Mat resizedFace;
+	//Size s = faceimg.size();
+	//s.height = s.height*(1.0/0.3);
+	//s.width = s.width*(1.0/0.3);
+	//cout << "Size: " << s <<endl;
+	resize(faceImg, resizedFace, Size(148, 151), 0, 0, INTER_LINEAR);
+	//resize(mask, mask, Size(148, 151), 0, 0, INTER_LINEAR);
+	//mask.convertTo(mask, CV_64F);
+	//cout << "mask: " << sum(mask)[0] << endl;
+
+	//Mat nshape = neutralshape*(1.0/0.3);
+	//Mat dispImg = resizedFace.clone();
+
+	//for (int i=0; i<66; i++)
+	//{
+	//	circle(dispImg, Point(nshape.at<double>(i,0)+s.width/2, nshape.at<double>(i+66,0)+s.height/2), 2, Scalar(0,0,255), 2);
+	//}
+
+	//cout << "face type" << resizedFace.type() << endl;
+	//cin.ignore();
+	//Mat maskedFace = Mat::zeros(mask.rows, mask.cols, CV_8UC3);
+	//for (int i=0; i<mask.rows; i++)
+	//	for (int j=0; j<mask.cols; j++)
+	//		if (mask.at<double>(i,j) == 1)
+	//		{
+	//			maskedFace.at<Vec3b>(i,j) = resizedFace.at<Vec3b>(i,j);
+	//		}
+
+
+	//imshow("FaceImg", dispImg);
+	//imshow("mask", mask);
+	//imshow("masked face", maskedFace);
+	//waitKey();
+
+	Mat tex = am.getAppModel().imageToTexture(resizedFace);
+	Mat test = am.getAppModel().textureToImage(tex);
+	imshow("faceimg", faceImg);
+	imshow("texture test", test);
+			
+	Mat appParams = am.getAppModel().fitImageToAppModel(tex);
+	Mat fittedtex = am.getAppModel().appParamsToTexture(appParams);
+	imshow("fitted image", am.getAppModel().textureToImage(fittedtex));
+
+	waitKey();
+
+	avatarWarpedHead2 = am.getAppModel().textureToImage(fittedtex).clone();
+	
+	writeToFile = true;
+}
 
 
 
@@ -121,22 +212,19 @@ void Puppets(){		//this is where the magic happens! Sort of.
 		Mat newshape;
 		Mat globalShape;
 
-		double mouth = double(gtk_adjustment_get_value(gtk_range_get_adjustment( GTK_RANGE(hscale))));
-		double eyebrows = double(gtk_adjustment_get_value(gtk_range_get_adjustment( GTK_RANGE(hscale2))));
-		double smile = double(gtk_adjustment_get_value(gtk_range_get_adjustment( GTK_RANGE(hscale3))));		//weight of expression parameters
+		// Set to defaults - don't have ability to change in this
+		double mouth = 100;
+		double eyebrows = 100;
+		double smile = 100;		//weight of expression parameters
 
-		double headmovement = double(gtk_adjustment_get_value(gtk_range_get_adjustment( GTK_RANGE(hscale5))))/100.0;
+		double headmovement = 1;
 
 		Mat oldshape;
 		clmModel._clm._plocal.copyTo(localShape);
 		clmModel._clm._pglobl.copyTo(globalShape);
-		globalShape.db(1,0) *= headmovement;
-		globalShape.db(2,0) *= headmovement;
-		globalShape.db(3,0) *= headmovement;
+
 		clmModel._clm._pdm.CalcShape2D(oldshape, localShape, globalShape);		//calculate old shape
-		localShape.db(0,0) *= (mouth/100.0);
-		localShape.db(1,0) *= (eyebrows/100.0);
-		localShape.db(2,0) *= (smile/100.0);
+
 		clmModel._clm._pdm.CalcShape2D(newshape, localShape, globalShape); //calculate new shape
 
 		ParseToPAW(newshape, localShape, globalShape);
@@ -157,42 +245,31 @@ void Puppets(){		//this is where the magic happens! Sort of.
 			toggleERI = 1;
 		}
 
-
 		sendOptions(writeToFile,toggleERI, choiceavatar);	//send writeto and usesave to avatar
+		
 
 		clmModel._det_valid._fcheck[viewid]._paw.WarpToNeutral(faceimg, newshape, neutralshape);		//warp to neutral (in CLM/PAW.cc)
 
 
+		// If the first frame then do ageing and set the aged face as the avatar
+		if (firstFrame)
+		{
+			firstFrame = false;
+			
+			ageing(faceimg, 0, false);
+		}
+		imshow("Avatar", avatarWarpedHead2);
 
 		//***************//	
 		if(avatarWarpedHead2.empty()){
-
-
-			string imagefileloc, filelocleft, filelocright;
-
-			if(avatarfile2.empty()){
-				avatarfile2 = "../images/shape_central.yml";
-			}
-
-			cout << "avatar file " << avatarfile2 << endl;
-			FileStorage fs(avatarfile2, FileStorage::READ);	
-			fs["shape"] >> avatarS2;
-			fs["filename"] >> imagefileloc;
-			fs["fileleft"] >> filelocleft;
-			fs["fileright"] >> filelocright;
-			fs.release();
-
-			avatarWarpedHead2 = imread( imagefileloc);
-
-
-			cvtColor(avatarWarpedHead2, avatarWarpedHead2, CV_RGB2BGR);
-
-			//warp to neutral on read of a new face, not every loop: so you only have to do it once
-			clmModel._det_valid._fcheck[0]._paw.WarpToNeutral(avatarWarpedHead2, avatarS2, neutralshape);
-
+			ageing(faceimg, 0, false);
 		}
 
-
+		if (ageFace)
+		{
+			ageFace = false;
+			ageing(faceimg, 0, false);
+		}
 
 
 		float downratio = 1.0; 
@@ -215,35 +292,13 @@ void Puppets(){		//this is where the magic happens! Sort of.
 			oldshape.at<double>(k,0) /= downratio;	
 		}
 
-	DoOpenglStuff(teethimg, oldshape, newshape, neutralshape, clmModel._det_valid._fcheck[0]._paw._tri, localShape, faceimg, avatarWarpedHead2, viewid, 1);
+		DoOpenglStuff(teethimg, oldshape, newshape, neutralshape, clmModel._det_valid._fcheck[0]._paw._tri, localShape, faceimg, avatarWarpedHead2, viewid, 1);
 		//***************//
 
 
 
 		if(PAWREADNEXTTIME){
-			cout << "PAWREADNEXTTIME EXECUTING" << endl;
-			string imagefileloc, filelocleft, filelocright;
-			if(avatarfile2.empty()){
-				avatarfile2 = "../images/shape_central.yml";
-			}
-			cout << "avatar file " << avatarfile2 << endl;
-			FileStorage fs(avatarfile2, FileStorage::READ);	
-			fs["shape"] >> avatarS2;
-			fs["filename"] >> imagefileloc;
-			fs["fileleft"] >> filelocleft;
-			fs["fileright"] >> filelocright;
-			fs.release();
-			avatarWarpedHead2 = imread( imagefileloc);
-
-
-			cvtColor(avatarWarpedHead2, avatarWarpedHead2, CV_RGB2BGR);
-
-			if(!avatarWarpedHead2.empty()){
-				imshow("Source Face", avatarWarpedHead2);
-			}
-
-			//warp to neutral on read so you only have to do it once, as above
-			clmModel._det_valid._fcheck[0]._paw.WarpToNeutral(avatarWarpedHead2, avatarS2, neutralshape);
+			ageing(faceimg, 0, false);
 		}
 
 
@@ -268,14 +323,6 @@ void use_webcam(){			//called when the 'use webcam' checkbox is ticked
 	resetERIExpression();
 }
 
-void replace_face(){
-	sendReplace_Face(!gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(check1)));
-}
-
-
-void face_under(){
-	sendFaceBackgroundBool(!gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(check2)));
-}
 
 static gboolean time_handler( GtkWidget *widget ) {
 	return TRUE;
@@ -301,22 +348,22 @@ gboolean expose_event_callback(GtkWidget *widget, GdkEventExpose *event, gpointe
 }
 
 
-static void file_ok_sel( GtkWidget        *w,
-	GtkFileSelection *fs )
-{
-	oldfile = file;
-	gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(check), 0);
-	USEWEBCAM = 0;
-	resetERIExpression();
-	CHANGESOURCE = true;
-	NEWFILE = true;
-	inputfile = gtk_file_selection_get_filename (GTK_FILE_SELECTION (filew));
-	cout << "Loading from: " << inputfile << endl;
-
-	GETFACE = true;
-	cout << "file: " << inputfile << ", oldfile: " << oldfile << endl;
-	gtk_widget_destroy(filew);	
-}
+//static void file_ok_sel( GtkWidget        *w,
+//	GtkFileSelection *fs )
+//{
+//	oldfile = file;
+//	gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(check), 0);
+//	USEWEBCAM = 0;
+//	resetERIExpression();
+//	CHANGESOURCE = true;
+//	NEWFILE = true;
+//	inputfile = gtk_file_selection_get_filename (GTK_FILE_SELECTION (filew));
+//	cout << "Loading from: " << inputfile << endl;
+//
+//	GETFACE = true;
+//	cout << "file: " << inputfile << ", oldfile: " << oldfile << endl;
+//	gtk_widget_destroy(filew);	
+//}
 
 
 static void file_ok_sel_z( GtkWidget        *w,
@@ -341,58 +388,6 @@ static void callback( GtkWidget *widget,
 	gpointer   data )
 {
 	g_print ("Hello again - %s was pressed\n", (char *) data);
-
-	if((char *) data=="save avatar"){
-
-
-		writeToFile = !writeToFile;
-		PAWREADAGAIN = true;
-
-	}
-
-
-	if((char *) data=="toggle eri"){
-		ERIon = !ERIon;
-	}
-
-
-	if((char *) data=="load avatar"){
-
-		/* Create a new file selection widget */
-		filew = gtk_file_selection_new ("File selection");
-
-		//g_signal_connect (filew, "destroy",
-		//			  G_CALLBACK (gtk_main_quit), NULL);
-		/* Connect the ok_button to file_ok_sel function */
-		g_signal_connect (GTK_FILE_SELECTION (filew)->ok_button,
-			"clicked", G_CALLBACK (file_ok_sel), (gpointer) filew);
-
-		/* Connect the cancel_button to destroy the widget */
-		g_signal_connect_swapped (GTK_FILE_SELECTION (filew)->cancel_button,
-			"clicked", G_CALLBACK (gtk_widget_destroy),filew);
-
-		/* Lets set the filename, as if this were a save dialog, and we are giving
-		a default filename */
-		gtk_file_selection_set_filename (GTK_FILE_SELECTION(filew), "..\\videos\\" );
-
-
-
-		//	    gtk_table_attach_defaults (GTK_TABLE (table), filew, 0, 2, 3, 4);
-
-		gtk_widget_show (filew);
-
-	}
-
-
-	if((char *) data=="reset eri"){
-
-		resetERIExpression();
-
-	}
-
-
-
-
 
 	if((char *) data=="load video"){
 
@@ -420,11 +415,6 @@ static void callback( GtkWidget *widget,
 
 	}
 
-
-	if((char *) data=="reset tracking"){
-		trackingInitialised = false;
-		facesInRow = 0;
-	}
 }
 
 /* This callback quits the program */
@@ -766,6 +756,9 @@ void doFaceTracking(int argc, char **argv){
 		Mat img;
 		vCap >> img;
 
+		if (CHANGESOURCE)
+			ageFace = true;  // Need to do face ageing if source is changed
+
 
 		// If no dimensions defined, do not do any resizing
 		if(dimx == 0 || dimy == 0)
@@ -1075,7 +1068,7 @@ void doFaceTracking(int argc, char **argv){
 
 
 
-			sendERIstrength(double(gtk_adjustment_get_value(gtk_range_get_adjustment( GTK_RANGE(hscale4)))));
+			sendERIstrength(33);
 
 
 
@@ -1093,48 +1086,10 @@ void doFaceTracking(int argc, char **argv){
 
 			}
 
-
-			option = int(gtk_combo_box_get_active(GTK_COMBO_BOX(avatarchoice)) );
-
-
+			
 			GRAYSCALE = false;
 
-			if ((option == -1) || (option == 2)){
-				choiceavatar = "";
-			}
-
-			if (option == 0){
-				choiceavatar = "_clo";
-			}
-
-			if (option == 1){
-				choiceavatar = "_ero";
-				//	GRAYSCALE = true;
-			}
-
-			if (option == 3){
-				choiceavatar = "_oba";
-			}
-
-			if (option == 4){
-				choiceavatar = "_jol";
-			}
-
-			if (option == 5){
-				choiceavatar = "_old";
-			}
-
-			if (option == 6){
-				choiceavatar = "_jak";
-			}
-
-			if (option == 7){
-				choiceavatar = "_cag";
-			}
-
-
-
-
+		
 
 			while(gtk_events_pending ()){
 				gtk_main_iteration ();
@@ -1143,14 +1098,15 @@ void doFaceTracking(int argc, char **argv){
 
 
 
-			if(PAWREADNEXTTIME){
-				sendAvatarFile(avatarfile2);
-				cout << "Read Again!" << endl;
-				PAWREADNEXTTIME = false;
-				cout << "PAW READ NEXT TIME OFF" << endl;
-			}
-			if((option != oldoption) || PAWREADAGAIN){
-				avatarfile2 = string("../images/shape_central" + choiceavatar + ".yml");
+			//if(PAWREADNEXTTIME){
+			//	sendAvatarFile(avatarfile2);
+			//	cout << "Read Again!" << endl;
+			//	PAWREADNEXTTIME = false;
+			//	cout << "PAW READ NEXT TIME OFF" << endl;
+			//}
+			if(PAWREADAGAIN){
+				//avatarfile2 = string("../images/shape_central" + choiceavatar + ".yml");
+				firstFrame = true;
 				PAWREADNEXTTIME = true;
 				PAWREADAGAIN = false;
 				cout << "PAW READ NEXT TIME ON" << endl;
@@ -1163,8 +1119,6 @@ void doFaceTracking(int argc, char **argv){
 
 
 
-
-			oldoption = option;
 
 
 			if(quitmain==1){
@@ -1265,37 +1219,12 @@ void startGTK(int argc, char **argv){
 	gtk_container_set_border_width (GTK_CONTAINER (window), 20);
 
 	/* Create an n x m table */
-	table = gtk_table_new(12,5,TRUE);
+	table = gtk_table_new(15,7,TRUE);
 
 	/* Put the table in the main window */
 	gtk_container_add (GTK_CONTAINER (window), table);
 
-	/* Create first button */
-	button = gtk_button_new_with_label ("Save Avatar");
-
-	/* When the button is clicked, we call the "callback" function
-	* with a pointer to "save avatar" as its argument */
-	g_signal_connect (button, "clicked",
-		G_CALLBACK (callback), (gpointer) "save avatar");
-
-
-	/* Insert button 1 into the upper left quadrant of the table */
-	gtk_table_attach_defaults (GTK_TABLE (table), button, 0, 1, 0, 1);
-
-	gtk_widget_show (button);
-
-	/* Create second button */
-
-	button = gtk_button_new_with_label ("Toggle ERI System");
-
-	/* When the button is clicked, we call the "callback" function
-	* with a pointer to "toggle eri" as its argument */
-	g_signal_connect (button, "clicked",
-		G_CALLBACK (callback), (gpointer) "toggle eri");
-	/* Insert button 2 into the upper right quadrant of the table */
-	gtk_table_attach_defaults (GTK_TABLE (table), button, 1, 2, 0, 1);
-
-	gtk_widget_show (button);
+	
 
 	/* Create "Quit" button */
 	button = gtk_button_new_with_label ("Quit");
@@ -1308,37 +1237,8 @@ void startGTK(int argc, char **argv){
 
 
 
-	/* Create third button */
-
-	button = gtk_button_new_with_label ("Load Avatar Image");
-
-	/* When the button is clicked, we call the "callback" function
-	* with a pointer to "load avatar" as its argument */
-	g_signal_connect (button, "clicked",
-		G_CALLBACK (callback), (gpointer) "load avatar");
-	/* Insert button 3 into the table */
-	gtk_table_attach_defaults (GTK_TABLE (table), button, 1, 2, 3, 4);
-
-	gtk_widget_show (button);
-
-
-
-	/* Create fourth button */
-	button = gtk_button_new_with_label ("Reset ERI Mapping");
-
-	/* When the button is clicked, we call the "callback" function
-	* with a pointer to "reset eri" as its argument */
-	g_signal_connect (button, "clicked",
-		G_CALLBACK (callback), (gpointer) "reset eri");
-
-
-	/* Insert button 4 into the upper left quadrant of the table */
-	gtk_table_attach_defaults (GTK_TABLE (table), button, 0, 1, 3, 4);
-	gtk_widget_show (button);
-
-
-
-	/* Create fifth button: load video file */
+	
+	/* Create button: load video file */
 
 	button = gtk_button_new_with_label ("Load Video File");
 
@@ -1347,49 +1247,18 @@ void startGTK(int argc, char **argv){
 	g_signal_connect (button, "clicked",
 		G_CALLBACK (callback), (gpointer) "load video");
 	/* Insert button 3 into the table */
-	gtk_table_attach_defaults (GTK_TABLE (table), button, 0, 1, 1, 2);
+	gtk_table_attach_defaults (GTK_TABLE (table), button, 0, 1, 4, 5);
 
 	gtk_widget_show (button);
 
-
-	/* Create sizth button: reset tracking */
-
-	button = gtk_button_new_with_label ("Reset Tracking");
-
-	/* When the button is clicked, we call the "callback" function
-	* with a pointer to "reset tracking" as its argument */
-	g_signal_connect (button, "clicked",
-		G_CALLBACK (callback), (gpointer) "reset tracking");
-	/* Insert button 3 into the table */
-	gtk_table_attach_defaults (GTK_TABLE (table), button, 1,2, 10,11);
-
-	gtk_widget_show (button);
 
 
 	/* Add a check button to select the webcam by default */
 	check = gtk_check_button_new_with_label ("Use Webcam");
 	gtk_signal_connect(GTK_OBJECT (check), "pressed",use_webcam, NULL);
 	gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(check), 0);
-	gtk_table_attach_defaults (GTK_TABLE (table), check, 0, 1, 10,11);
+	gtk_table_attach_defaults (GTK_TABLE (table), check, 0, 1, 6,7);
 	gtk_widget_show(check);
-
-
-	/* Add a check button to select the webcam by default */
-	check1 = gtk_check_button_new_with_label ("Face Replacement");
-	gtk_signal_connect(GTK_OBJECT (check1), "pressed",replace_face, NULL);
-	gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(check1), 1);
-	gtk_table_attach_defaults (GTK_TABLE (table), check1, 0, 1,  11,12);
-	gtk_widget_show(check1);
-
-
-
-	/* Add a check button to select the webcam by default */
-	check2 = gtk_check_button_new_with_label ("Face Undercoat");
-	gtk_signal_connect(GTK_OBJECT (check2), "pressed",face_under, NULL);
-	gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(check2), 1);
-	gtk_table_attach_defaults (GTK_TABLE (table), check2, 1, 2, 11,12);
-	gtk_widget_show(check2);
-
 
 
 	/* Create "Quit" button */
@@ -1409,33 +1278,18 @@ void startGTK(int argc, char **argv){
 
 	/* Ask for a window   */
 	gtk_widget_set_size_request(drawing_area, opencvImage.width,opencvImage.height);
-	gtk_table_attach_defaults (GTK_TABLE (table), drawing_area, 2, 5, 0, 12);
+	gtk_table_attach_defaults (GTK_TABLE (table), drawing_area, 3, 7, 0, 15);
 
 	g_signal_connect(G_OBJECT (drawing_area), "expose_event", G_CALLBACK (expose_event_callback), NULL);
 	gtk_widget_show(drawing_area);
 
 	time_handler(window);
 
-	adj1 = gtk_adjustment_new (100.0, 0.0, 301.0, 0.1, 1.0, 1.0);
-	adj2 = gtk_adjustment_new (100.0, 0.0, 301.0, 0.1, 1.0, 1.0);
-	adj3 = gtk_adjustment_new (100.0, 0.0, 301.0, 0.1, 1.0, 1.0);
-	adj4 = gtk_adjustment_new (33.3, 0.0, 101.0, 0.1, 1.0, 1.0);
-	adj5 = gtk_adjustment_new (100.0, 0.0, 301.0, 0.1, 1.0, 1.0);
 
-	avatarchoice = gtk_combo_box_entry_new_text();
+
 	inputchoice = gtk_combo_box_entry_new_text();
 
 	//note the combo box selections are identified by the program only by their number: 1,2,3,4, etc.
-	gtk_combo_box_append_text(GTK_COMBO_BOX(avatarchoice), "George Clooney");
-	gtk_combo_box_append_text(GTK_COMBO_BOX(avatarchoice), "Errol");
-	gtk_combo_box_append_text(GTK_COMBO_BOX(avatarchoice), "Myself");
-	gtk_combo_box_append_text(GTK_COMBO_BOX(avatarchoice), "Obama");
-	gtk_combo_box_append_text(GTK_COMBO_BOX(avatarchoice), "Angelina Jolie");
-	gtk_combo_box_append_text(GTK_COMBO_BOX(avatarchoice), "Old Woman");
-	gtk_combo_box_append_text(GTK_COMBO_BOX(avatarchoice), "Michael Jackson");
-	gtk_combo_box_append_text(GTK_COMBO_BOX(avatarchoice), "Nicholas Cage");
-
-
 
 
 	gtk_combo_box_append_text(GTK_COMBO_BOX(inputchoice), "Dreamy");
@@ -1449,75 +1303,16 @@ void startGTK(int argc, char **argv){
 	gtk_combo_box_append_text(GTK_COMBO_BOX(inputchoice), "Inspired");
 
 
-	gtk_table_attach_defaults (GTK_TABLE (table), avatarchoice, 0, 2, 2, 3);
-	gtk_widget_show(avatarchoice);
 
-
-
-	gtk_table_attach_defaults (GTK_TABLE (table), inputchoice, 0, 2, 4, 5);
+	gtk_table_attach_defaults (GTK_TABLE (table), inputchoice, 0, 2, 8, 9);
 	gtk_widget_show(inputchoice);
 
-	hscale = gtk_hscale_new (GTK_ADJUSTMENT (adj1));
-	gtk_widget_set_size_request (GTK_WIDGET (hscale), 200, -1);
-	gtk_table_attach_defaults (GTK_TABLE (table), hscale, 1, 2, 5,6);
-
-	gtk_range_set_update_policy( GTK_RANGE(hscale), GTK_UPDATE_DELAYED);
-	gtk_widget_show (hscale);
-
-
-	label1 = gtk_label_new("Mouth open (%)");
-	label2 = gtk_label_new("Eyebrows (%)");
-	label3 = gtk_label_new("Smile (%)");
-	label4 = gtk_label_new("ERI (Texture) Mapping (%)");
-	label5 = gtk_label_new("Head Rotation (%)");
-
-	gtk_table_attach_defaults (GTK_TABLE (table), label1, 0, 1, 5, 6);
-	gtk_table_attach_defaults (GTK_TABLE (table), label2, 0, 1, 6, 7);
-	gtk_table_attach_defaults (GTK_TABLE (table), label3, 0, 1, 7, 8);
-	gtk_table_attach_defaults (GTK_TABLE (table), label4, 0, 1, 8, 9);
-	gtk_table_attach_defaults (GTK_TABLE (table), label5, 0, 1, 9, 10);
-
-	gtk_widget_show (label1);
-	gtk_widget_show (label2);
-	gtk_widget_show (label3);
-	gtk_widget_show (label4);
-	gtk_widget_show (label5);
-
-
-	hscale2 = gtk_hscale_new (GTK_ADJUSTMENT (adj2));
-	gtk_widget_set_size_request (GTK_WIDGET (hscale2), 200, -1);
-	gtk_table_attach_defaults (GTK_TABLE (table), hscale2, 1, 2,6,7);
-
-	gtk_range_set_update_policy( GTK_RANGE(hscale2), GTK_UPDATE_DELAYED);
-	gtk_widget_show (hscale2);
-
-
-	hscale3 = gtk_hscale_new (GTK_ADJUSTMENT (adj3));
-	gtk_widget_set_size_request (GTK_WIDGET (hscale3), 200, -1);
-	gtk_table_attach_defaults (GTK_TABLE (table), hscale3, 1, 2, 7,8);
-
-	gtk_range_set_update_policy( GTK_RANGE(hscale3), GTK_UPDATE_DELAYED);
-	gtk_widget_show (hscale3);
-
-	hscale4 = gtk_hscale_new (GTK_ADJUSTMENT (adj4));
-	gtk_widget_set_size_request (GTK_WIDGET (hscale4), 200, -1);
-	gtk_table_attach_defaults (GTK_TABLE (table), hscale4, 1, 2, 8,9);
-
-	gtk_range_set_update_policy( GTK_RANGE(hscale4), GTK_UPDATE_DELAYED);
-	gtk_widget_show (hscale4);
-
-
-	hscale5 = gtk_hscale_new (GTK_ADJUSTMENT (adj5));
-	gtk_widget_set_size_request (GTK_WIDGET (hscale5), 200, -1);
-	gtk_table_attach_defaults (GTK_TABLE (table), hscale5, 1, 2, 9,10);
-
-	gtk_range_set_update_policy( GTK_RANGE(hscale5), GTK_UPDATE_DELAYED);
-	gtk_widget_show (hscale5);
+	
 
 
 	/* Insert the quit button into the both 
 	* lower quadrants of the table */
-	gtk_table_attach_defaults (GTK_TABLE (table), button, 1, 2, 1, 2);
+	gtk_table_attach_defaults (GTK_TABLE (table), button, 1, 2, 4, 5);
 
 	gtk_widget_show (button);
 
@@ -1539,6 +1334,9 @@ int main (int argc, char **argv)
 
 	startGTK(argc,argv);
 
+	// Load the ageing model
+	// TODO: seems to run out of memory when trying to load the model...
+	am = AgeingModel("C:\\dataset\\Models\\Model5");
 
 	omp_init_lock(&writelock);
 

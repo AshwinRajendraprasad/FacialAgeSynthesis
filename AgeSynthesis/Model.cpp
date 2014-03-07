@@ -1,6 +1,7 @@
 #include "Model.h"
 
 #include <iostream>
+#include <bitset>
 
 Model::Model(string path)
 {
@@ -26,7 +27,7 @@ map<string, cv::Mat > Model::LoadSingleModel(std::string path)
 
 	string line;
 	map<string, cv::Mat > fields;
-	Matrix m = Matrix();
+	Mat m = Mat();
 	string name;
 	while (getline(infile, line)) {
 		stringstream ss(line);
@@ -44,7 +45,7 @@ map<string, cv::Mat > Model::LoadSingleModel(std::string path)
 				//}
 				fields.insert(pair<string, cv::Mat>(name, cvMat));
 				// Need to clear the matrix and set the row counter back to 0
-				m = Matrix();
+				m = Mat();
 			} else {  // Must be a string, so its the name of the field
 				name = line;
 			}

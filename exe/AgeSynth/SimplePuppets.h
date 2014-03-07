@@ -9,12 +9,15 @@
 #include <Avatar.h>
 #include <PAW.h>
 #include <CLM.h>
+#include "AgeingModel.h"
 
 #include <gtk/gtk.h>
 #include <fstream>
 #include <sstream>
 
 #include <cv.h>
+
+using namespace cv;
 
 
 
@@ -23,9 +26,8 @@
     GtkWidget *button;
     GtkWidget *table;
 	GtkWidget *drawing_area;
-    GtkWidget *check, *check1, *check2;
-	GtkWidget *hscale, *hscale2, *hscale3, *hscale4, *hscale5, *label1, *label2, *label3, *label4, *label5, *avatarchoice, *inputchoice;
-	GtkObject *adj1, *adj2, *adj3, *adj4, *adj5;
+    GtkWidget *check;
+	GtkWidget *inputchoice;
 
   int mindreadervideo = -1;
 
@@ -34,12 +36,10 @@
 bool writeToFile = 0;
 bool ERIon = 0;
 bool quitmain = 0;
-string choiceavatar = "0";
+string choiceavatar = "";
 bool GRAYSCALE = false;
 
-int option, oldoption;
-
-GtkWidget *filew, *filez;
+GtkWidget *filez;
 int facesInRow = 0;
 bool trackingInitialised;
 
@@ -64,12 +64,17 @@ bool CHANGESOURCE = false;
 bool PAWREADAGAIN = false;
 bool PAWREADNEXTTIME = false;
 
+bool firstFrame = true;  //If first frame then capture this and use it to perform face ageing
+bool ageFace = false;
+
+AgeingModel am;
+
 
 
 void use_webcam();
 static gboolean time_handler( GtkWidget *widget );
 gboolean expose_event_callback(GtkWidget *widget, GdkEventExpose *event, gpointer data);
-static void file_ok_sel( GtkWidget        *w,  GtkFileSelection *fs );
+//static void file_ok_sel( GtkWidget        *w,  GtkFileSelection *fs );
 static void file_ok_sel_z( GtkWidget        *w,  GtkFileSelection *fs );
 static void callback( GtkWidget *widget,  gpointer   data );
 static gboolean delete_event( GtkWidget *widget, GdkEvent  *event, gpointer   data );

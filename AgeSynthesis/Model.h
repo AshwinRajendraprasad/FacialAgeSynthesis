@@ -6,7 +6,7 @@
 #include <cv.h>
 #include <vector>
 
-#include "Matrix.h"
+#include "Mat.h"
 
 using namespace std;
 

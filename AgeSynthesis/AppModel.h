@@ -22,9 +22,6 @@ public:
 	// Converts between a 2D image and a 1D texture - the texture only stores parts mask covers
 	cv::Mat imageToTexture(cv::Mat image);
 	cv::Mat textureToImage(cv::Mat texture);
-	// Overloads that use a different mask to that from the model
-	cv::Mat imageToTexture(cv::Mat image, cv::Mat mask);
-	cv::Mat textureToImage(cv::Mat texture, cv::Mat mask);
 
 private:
 	// Only overriden to make private

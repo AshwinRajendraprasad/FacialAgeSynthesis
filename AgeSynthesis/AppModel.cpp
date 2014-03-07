@@ -63,8 +63,10 @@ cv::Mat AppModel::appParamsToTexture(cv::Mat appParams)
 	return texture;
 }
 
-cv::Mat AppModel::imageToTexture(cv::Mat image, cv::Mat mask)
+cv::Mat AppModel::imageToTexture(cv::Mat image)
 {
+	cv::Mat mask = getField(FieldNames::APP_MASK);
+
 	int channelSize = cv::sum(mask)[0];
 	cv::Mat texture = cv::Mat(1, channelSize*3, CV_64F);
 
@@ -91,12 +93,13 @@ cv::Mat AppModel::imageToTexture(cv::Mat image, cv::Mat mask)
 
 }
 
-cv::Mat AppModel::textureToImage(cv::Mat texture, cv::Mat mask)
+cv::Mat AppModel::textureToImage(cv::Mat texture)
 {
+	cv::Mat mask = getField(FieldNames::APP_MASK);
 	int channelSize = cv::sum(mask)[0];  //this is the size of one of the RGB channels
 
 	// Create an image the same size as the mask
-	cv::Mat image = cv::Mat::zeros(mask.rows, mask.cols, CV_64FC3);
+	cv::Mat image = cv::Mat::zeros(mask.rows, mask.cols, CV_8SC3);
 
 	int tCounter = 0;
 	// For each element in the image, if the mask is 1 then put the texture value in, else leave as 0
@@ -111,24 +114,12 @@ cv::Mat AppModel::textureToImage(cv::Mat texture, cv::Mat mask)
 				double b = texture.at<double>(tCounter+channelSize*2);
 				double g = texture.at<double>(tCounter+channelSize);
 				double r = texture.at<double>(tCounter);
-				cv::Vec3d vec(b, g, r);
-				image.at<cv::Vec3d>(i,j) = vec;
+				cv::Vec3b vec(b, g, r);
+				image.at<cv::Vec3b>(i,j) = vec;
 				tCounter++;
 			}
 		}
 	}
-	image.convertTo(image, CV_8UC3);
+
 	return image;
-}
-
-cv::Mat AppModel::imageToTexture(cv::Mat image)
-{
-	cv::Mat mask = getField(FieldNames::APP_MASK);
-	return imageToTexture(image, mask);
-}
-
-cv::Mat AppModel::textureToImage(cv::Mat texture)
-{
-	cv::Mat mask = getField(FieldNames::APP_MASK);
-	return textureToImage(texture, mask);
 }
