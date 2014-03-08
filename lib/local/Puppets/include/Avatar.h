@@ -22,6 +22,8 @@ using namespace cv;
 
 void sendOptions(bool writeto, bool usedsave, string avatar);
 
+void setWriteAvatar(bool write);
+
 void resetERIExpression();
 
 void cropAvatar(cv::Mat &m, cv::Mat &s);

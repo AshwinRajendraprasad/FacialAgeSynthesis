@@ -106,97 +106,51 @@ void readFromStock(int c ){
 
 }
 
-Mat warpImage(Mat img)
+
+void ageing(Mat faceImg)
 {
-	// Set up the PAW
-	Mat localShape;
-	Mat newshape;
-	Mat globalShape;
-
-	clmModel._clm._plocal.copyTo(localShape);
-	clmModel._clm._pglobl.copyTo(globalShape);
-
-	clmModel._clm._pdm.CalcShape2D(newshape, localShape, globalShape); //calculate new shape
-
-	ParseToPAW(newshape, localShape, globalShape);
-
-	// Find out which orientation head is so that can use the correct warp
-	Vec3d orientation;
-	orientation(0) = globalShape.at<double>(1);
-	orientation(1) = globalShape.at<double>(2);
-	orientation(2) = globalShape.at<double>(3);
-
-	int viewid = clmModel._det_valid.GetViewId(orientation);
-
-	cv::Mat neutralshape(newshape.rows, 1, CV_64FC1);
-	clmModel._det_valid._fcheck[viewid]._paw.WarpToNeutral(img, newshape, neutralshape);		//warp to neutral (in CLM/PAW.cc)
-
-	return img;
-}
-
-
-void ageing(Mat face, int targetAge, bool warp)
-{
-	Mat faceImg;
-	// If the image needs to be warped to neutral then do so
-	if (warp)
-		faceImg = warpImage(face);
-	else
-	{
-		//Mat img;
-		//vCap >> img;
-		//faceImg = warpImage(img);
-		face.copyTo(faceImg);
-	}
-
+	double t = (double)getTickCount();
 	Mat resizedFace;
-	//Size s = faceimg.size();
-	//s.height = s.height*(1.0/0.3);
-	//s.width = s.width*(1.0/0.3);
-	//cout << "Size: " << s <<endl;
+
 	resize(faceImg, resizedFace, Size(148, 151), 0, 0, INTER_LINEAR);
-	//resize(mask, mask, Size(148, 151), 0, 0, INTER_LINEAR);
-	//mask.convertTo(mask, CV_64F);
-	//cout << "mask: " << sum(mask)[0] << endl;
-
-	//Mat nshape = neutralshape*(1.0/0.3);
-	//Mat dispImg = resizedFace.clone();
-
-	//for (int i=0; i<66; i++)
-	//{
-	//	circle(dispImg, Point(nshape.at<double>(i,0)+s.width/2, nshape.at<double>(i+66,0)+s.height/2), 2, Scalar(0,0,255), 2);
-	//}
-
-	//cout << "face type" << resizedFace.type() << endl;
-	//cin.ignore();
-	//Mat maskedFace = Mat::zeros(mask.rows, mask.cols, CV_8UC3);
-	//for (int i=0; i<mask.rows; i++)
-	//	for (int j=0; j<mask.cols; j++)
-	//		if (mask.at<double>(i,j) == 1)
-	//		{
-	//			maskedFace.at<Vec3b>(i,j) = resizedFace.at<Vec3b>(i,j);
-	//		}
-
-
-	//imshow("FaceImg", dispImg);
-	//imshow("mask", mask);
-	//imshow("masked face", maskedFace);
-	//waitKey();
 
 	Mat tex = am.getAppModel().imageToTexture(resizedFace);
 	Mat test = am.getAppModel().textureToImage(tex);
-	imshow("faceimg", faceImg);
-	imshow("texture test", test);
 			
 	Mat appParams = am.getAppModel().fitImageToAppModel(tex);
-	Mat fittedtex = am.getAppModel().appParamsToTexture(appParams);
-	imshow("fitted image", am.getAppModel().textureToImage(fittedtex));
+
+	// get the target age from the slider
+	int targetAge = int(gtk_adjustment_get_value(gtk_range_get_adjustment( GTK_RANGE(ageScale))));
+
+	// get the gender from the dropdown
+	int g = int(gtk_combo_box_get_active(GTK_COMBO_BOX(genderChoice)));
+	char gender;
+	switch(g)
+	{
+	case 0:
+		gender = 'm';
+		break;
+	case 1:
+		gender = 'f';
+		break;
+	default:
+		gender = 'm';
+	}
+
+	Mat agedParams = am.changeFaceAge(appParams, targetAge, gender);
+
+	Mat agedTex = am.getAppModel().appParamsToTexture(agedParams);
+	imshow("aged image", am.getAppModel().textureToImage(agedTex));
+
+	// use the aged face as the avatar
+	avatarWarpedHead2 = am.getAppModel().textureToImage(agedTex);
+	
+	// Needed to make sure that when pose changes the program doesn't crash
+	setWriteAvatar(true);
+
+	cout << "Time to age: " << ((double)getTickCount() - t)/getTickFrequency() << endl;
 
 	waitKey();
-
-	avatarWarpedHead2 = am.getAppModel().textureToImage(fittedtex).clone();
-	
-	writeToFile = true;
 }
 
 
@@ -244,8 +198,6 @@ void Puppets(){		//this is where the magic happens! Sort of.
 		if(viewid != 0){
 			toggleERI = 1;
 		}
-
-		sendOptions(writeToFile,toggleERI, choiceavatar);	//send writeto and usesave to avatar
 		
 
 		clmModel._det_valid._fcheck[viewid]._paw.WarpToNeutral(faceimg, newshape, neutralshape);		//warp to neutral (in CLM/PAW.cc)
@@ -256,19 +208,19 @@ void Puppets(){		//this is where the magic happens! Sort of.
 		{
 			firstFrame = false;
 			
-			ageing(faceimg, 0, false);
+			ageing(faceimg);
 		}
 		imshow("Avatar", avatarWarpedHead2);
 
 		//***************//	
-		if(avatarWarpedHead2.empty()){
-			ageing(faceimg, 0, false);
+		if(avatarWarpedHead2.empty() || PAWREADNEXTTIME){
+			ageing(faceimg);
 		}
 
 		if (ageFace)
 		{
 			ageFace = false;
-			ageing(faceimg, 0, false);
+			ageing(faceimg);
 		}
 
 
@@ -292,14 +244,16 @@ void Puppets(){		//this is where the magic happens! Sort of.
 			oldshape.at<double>(k,0) /= downratio;	
 		}
 
+		sendOptions(writeToFile,toggleERI, choiceavatar);	//send writeto and usesave to avatar
+
 		DoOpenglStuff(teethimg, oldshape, newshape, neutralshape, clmModel._det_valid._fcheck[0]._paw._tri, localShape, faceimg, avatarWarpedHead2, viewid, 1);
 		//***************//
 
 
 
-		if(PAWREADNEXTTIME){
-			ageing(faceimg, 0, false);
-		}
+		//if(PAWREADNEXTTIME){
+		//	ageing(faceimg);
+		//}
 
 
 
@@ -348,24 +302,6 @@ gboolean expose_event_callback(GtkWidget *widget, GdkEventExpose *event, gpointe
 }
 
 
-//static void file_ok_sel( GtkWidget        *w,
-//	GtkFileSelection *fs )
-//{
-//	oldfile = file;
-//	gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(check), 0);
-//	USEWEBCAM = 0;
-//	resetERIExpression();
-//	CHANGESOURCE = true;
-//	NEWFILE = true;
-//	inputfile = gtk_file_selection_get_filename (GTK_FILE_SELECTION (filew));
-//	cout << "Loading from: " << inputfile << endl;
-//
-//	GETFACE = true;
-//	cout << "file: " << inputfile << ", oldfile: " << oldfile << endl;
-//	gtk_widget_destroy(filew);	
-//}
-
-
 static void file_ok_sel_z( GtkWidget        *w,
 	GtkFileSelection *fs )
 {
@@ -410,10 +346,11 @@ static void callback( GtkWidget *widget,
 		gtk_file_selection_set_filename (GTK_FILE_SELECTION(filez), "..\\videos\\");
 
 		gtk_widget_show (filez);
-
-
-
 	}
+
+	// If face changed then need to age face
+	if((char *) data=="face changed")
+		ageFace = true;
 
 }
 
@@ -426,6 +363,11 @@ static gboolean delete_event( GtkWidget *widget,
 	return 0;
 }
 
+// Called when any ageing choice is changed, just sets ageFace to true so face aged next time
+static void ageingChoicesChanged(GtkWidget *widget, gpointer data)
+{
+	ageFace = true;
+}
 
 
 
@@ -1219,7 +1161,7 @@ void startGTK(int argc, char **argv){
 	gtk_container_set_border_width (GTK_CONTAINER (window), 20);
 
 	/* Create an n x m table */
-	table = gtk_table_new(15,7,TRUE);
+	table = gtk_table_new(15,5,TRUE);
 
 	/* Put the table in the main window */
 	gtk_container_add (GTK_CONTAINER (window), table);
@@ -1246,18 +1188,27 @@ void startGTK(int argc, char **argv){
 	* with a pointer to "load video" as its argument */
 	g_signal_connect (button, "clicked",
 		G_CALLBACK (callback), (gpointer) "load video");
-	/* Insert button 3 into the table */
-	gtk_table_attach_defaults (GTK_TABLE (table), button, 0, 1, 4, 5);
+	/* Insert button into the table */
+	gtk_table_attach_defaults (GTK_TABLE (table), button, 0, 1, 2, 3);
 
 	gtk_widget_show (button);
 
 
+	// Create button: face changed
+	button = gtk_button_new_with_label ("Face Changed");
+	// Connect the button to call back for click event
+	g_signal_connect (button, "clicked",
+		G_CALLBACK (callback), (gpointer) "face changed");
+	/* Insert button into the table */
+	gtk_table_attach_defaults (GTK_TABLE (table), button, 1, 2, 8, 9);
+
+	gtk_widget_show (button);
 
 	/* Add a check button to select the webcam by default */
 	check = gtk_check_button_new_with_label ("Use Webcam");
 	gtk_signal_connect(GTK_OBJECT (check), "pressed",use_webcam, NULL);
 	gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(check), 0);
-	gtk_table_attach_defaults (GTK_TABLE (table), check, 0, 1, 6,7);
+	gtk_table_attach_defaults (GTK_TABLE (table), check, 0, 1, 4,5);
 	gtk_widget_show(check);
 
 
@@ -1278,20 +1229,48 @@ void startGTK(int argc, char **argv){
 
 	/* Ask for a window   */
 	gtk_widget_set_size_request(drawing_area, opencvImage.width,opencvImage.height);
-	gtk_table_attach_defaults (GTK_TABLE (table), drawing_area, 3, 7, 0, 15);
+	gtk_table_attach_defaults (GTK_TABLE (table), drawing_area, 3, 5, 0, 15);
 
 	g_signal_connect(G_OBJECT (drawing_area), "expose_event", G_CALLBACK (expose_event_callback), NULL);
 	gtk_widget_show(drawing_area);
 
 	time_handler(window);
 
+	// Add the age adjustment slider
+	adjAge = gtk_adjustment_new(30, 20, 100, 1, 5, 5);
+
+	ageScale = gtk_hscale_new (GTK_ADJUSTMENT (adjAge));
+	gtk_widget_set_size_request (GTK_WIDGET (ageScale), 200, -1);
+	gtk_table_attach_defaults (GTK_TABLE (table), ageScale, 1, 2, 6,7);
+
+	g_signal_connect(G_OBJECT(ageScale), "value_changed", G_CALLBACK(ageingChoicesChanged), NULL);  // Connect ageScale to function when it is changed
+
+	gtk_range_set_update_policy( GTK_RANGE(ageScale), GTK_UPDATE_DELAYED);
+	gtk_widget_show (ageScale);
+
+	ageLabel = gtk_label_new("Target Age");
+	gtk_table_attach_defaults (GTK_TABLE (table), ageLabel, 0, 1, 6, 7);
+	gtk_widget_show (ageLabel);
 
 
+	// Add the gender selection dropdown
+	genderChoice = gtk_combo_box_entry_new_text();
+
+	//note the combo box selections are identified by the program only by their number: 1,2,3,4, etc.
+	gtk_combo_box_append_text(GTK_COMBO_BOX(genderChoice), "Male");
+	gtk_combo_box_append_text(GTK_COMBO_BOX(genderChoice), "Female");
+
+	gtk_combo_box_set_active(GTK_COMBO_BOX(genderChoice), 0);
+
+	g_signal_connect(G_OBJECT(genderChoice), "changed", G_CALLBACK(ageingChoicesChanged), NULL);  // Connect genderChoice to function when it is changed
+
+	gtk_table_attach_defaults (GTK_TABLE (table), genderChoice, 0, 1, 8, 9);
+	gtk_widget_show(genderChoice);
+
+	// Add the input choice (list of videos)
 	inputchoice = gtk_combo_box_entry_new_text();
 
 	//note the combo box selections are identified by the program only by their number: 1,2,3,4, etc.
-
-
 	gtk_combo_box_append_text(GTK_COMBO_BOX(inputchoice), "Dreamy");
 	gtk_combo_box_append_text(GTK_COMBO_BOX(inputchoice), "Afraid");
 	gtk_combo_box_append_text(GTK_COMBO_BOX(inputchoice), "Comfortable");
@@ -1302,17 +1281,13 @@ void startGTK(int argc, char **argv){
 	gtk_combo_box_append_text(GTK_COMBO_BOX(inputchoice), "Angry");
 	gtk_combo_box_append_text(GTK_COMBO_BOX(inputchoice), "Inspired");
 
-
-
-	gtk_table_attach_defaults (GTK_TABLE (table), inputchoice, 0, 2, 8, 9);
+	gtk_table_attach_defaults (GTK_TABLE (table), inputchoice, 0, 2, 10, 11);
 	gtk_widget_show(inputchoice);
-
-	
 
 
 	/* Insert the quit button into the both 
 	* lower quadrants of the table */
-	gtk_table_attach_defaults (GTK_TABLE (table), button, 1, 2, 4, 5);
+	gtk_table_attach_defaults (GTK_TABLE (table), button, 1, 2, 2, 3);
 
 	gtk_widget_show (button);
 

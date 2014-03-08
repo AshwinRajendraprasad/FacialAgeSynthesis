@@ -27,7 +27,8 @@ using namespace cv;
     GtkWidget *table;
 	GtkWidget *drawing_area;
     GtkWidget *check;
-	GtkWidget *inputchoice;
+	GtkWidget *ageScale, *ageLabel, *genderChoice, *inputchoice;
+	GtkObject *adjAge;
 
   int mindreadervideo = -1;
 
@@ -36,7 +37,7 @@ using namespace cv;
 bool writeToFile = 0;
 bool ERIon = 0;
 bool quitmain = 0;
-string choiceavatar = "";
+string choiceavatar = "_av";
 bool GRAYSCALE = false;
 
 GtkWidget *filez;

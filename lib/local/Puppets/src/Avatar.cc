@@ -42,6 +42,8 @@ bool UNDERLAYER = true; //if the computer is fast enough, it deals with side-lig
 
 bool RECORDVIDEO = false;		//record video output (not controllable in the GUI)
 
+bool avatarWriteToFile = false;  //If want to write the avatar to file rather than the actual image (used for age synthesis)
+
 GLint   windowWidth  = 512;     // Define our window width
 GLint   windowHeight = 512;     // Define our window height
 
@@ -108,6 +110,7 @@ string filename = "../images/shape";
 string imgfiletype = ".jpg";
 string shapefiletype = ".yml";
 string imgfile, shapefile, shapefilecentre, shapefileleft, shapefileright;
+
 
 
 void sendReplace_Face(bool replace){		//sent by the main loop to toggle face replacement
@@ -332,8 +335,10 @@ void sendOptions(bool writeto, bool usesaved, string avatar){
 	USESAVEDIMAGE = usesaved;
 }
 
-
-
+void setWriteAvatar(bool write)
+{
+	avatarWriteToFile = write;
+}
 
 
 void displayHistogram(string windowname, vector<cv::Mat> bgr_planes){
@@ -727,6 +732,62 @@ void compensateColours(Mat &compensator, Mat &compensated){
 	}
 
 
+}
+
+void writeAvatarToDisk(cv::Mat camFrame, cv::Mat depthFrame, cv::Mat &s,cv::Mat &savatar,cv::Mat &snew, cv::Mat &_tri, Mat avatarlocal, bool ERIon, int posture)
+{
+	cout << "writing to disk..." << endl;
+	Mat scropped;
+	s.copyTo(scropped);
+	cout << "posture: " <<posture << endl;
+	cout << "framecout: " <<frameCount <<  endl;
+
+	if(posture==0){
+		cout << "got in here! " << endl;						//centre file. This file should have the links to the other YLMs
+		imgfile = filename +"_central_av"+ imgfiletype;
+		shapefile = filename +"_central_av"+ shapefiletype;
+		shapefileleft = filename +"_central_av"+ shapefiletype;		//change "_central" to _left or _right to go back to multi-view avatars!!!
+		shapefileright = filename +"_central_av"+ shapefiletype;
+		FileStorage fs(shapefile, FileStorage::WRITE);
+		imwrite(imgfile, camFrame );
+		fs << "shape" << scropped;
+		fs << "filename" << imgfile;
+		fs << "fileleft" << shapefileleft;
+		fs << "fileright" << shapefileright;
+		fs.release();
+	}
+
+
+	if(posture==2){
+		imgfile = filename+ "_left_av" + imgfiletype;
+		shapefile = filename+ "_left_av" + shapefiletype;
+		FileStorage fs(shapefile, FileStorage::WRITE);
+		imwrite(imgfile, camFrame );
+		fs << "shape" << scropped;
+		fs << "filename" << imgfile;
+		fs.release();
+	}
+
+
+	if(posture==1){
+		imgfile = filename +"_right_av"+ imgfiletype;
+		shapefile = filename +"_right_av"+ shapefiletype;
+		FileStorage fs(shapefile, FileStorage::WRITE);
+		imwrite(imgfile, camFrame );
+		fs << "shape" << scropped;
+		fs << "filename" << imgfile;
+		fs.release();
+	}
+
+	//the 'smiling' and 'openmouth' textures are no longer used
+
+	cout << "saved to: " << shapefile << endl;
+	avatarWriteToFile = false;
+	//CHANGEIMAGE = true;
+
+	glFinish();
+	glDisable(GL_TEXTURE_2D);
+	
 }
 
 void draw(cv::Mat camFrame, cv::Mat depthFrame, cv::Mat &s,cv::Mat &savatar,cv::Mat &snew, cv::Mat &_tri, Mat avatarlocal, bool ERIon, int posture)
@@ -1498,7 +1559,8 @@ Mat DoOpenglStuff(Mat dst,Mat s,Mat savatar,Mat snew, Mat _tri,  Mat avatarlocal
 
 
 
-
+				if (avatarWriteToFile)
+					writeAvatarToDisk(newFace,dst,sothercropped,savatar, snew, _tri, avatarlocal, 1, posture);
 
 
 				draw(newFace,dst,sothercropped,savatar, snew, _tri, avatarlocal, 1, posture);
