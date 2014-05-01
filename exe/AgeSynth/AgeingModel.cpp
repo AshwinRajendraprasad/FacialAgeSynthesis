@@ -2,9 +2,11 @@
 
 AgeingModel::AgeingModel(string path)
 {
+	double t = (double)cv::getTickCount();
 	appModel = AppModel(path+"\\App");
 	ageEstModel = AgeEstModel(path+"\\AgeEst");
 	ageSynthModel = AgeSynthModel(path+"\\AgeSynth");
+	cout << "Time to load ageing model: " << ((double)cv::getTickCount() - t)/cv::getTickFrequency() << endl;
 }
 
 AgeingModel::AgeingModel(void)

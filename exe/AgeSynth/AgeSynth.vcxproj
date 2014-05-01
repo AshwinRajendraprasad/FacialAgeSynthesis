@@ -265,6 +265,9 @@ xcopy /I /E /Y /D /C "$(SolutionDir)videos\default.wmv" "$(OutDir)"</Command>
     <ClInclude Include="SimplePuppets.h" />
     <ClInclude Include="TransModel.h" />
   </ItemGroup>
+  <ItemGroup>
+    <None Include="ModelCD.cd" />
+  </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
   </ImportGroup>

@@ -140,7 +140,7 @@ void ageing(Mat faceImg)
 	Mat agedParams = am.changeFaceAge(appParams, targetAge, gender);
 
 	Mat agedTex = am.getAppModel().appParamsToTexture(agedParams);
-	imshow("aged image", am.getAppModel().textureToImage(agedTex));
+	//imshow("aged image", am.getAppModel().textureToImage(agedTex));
 
 	// use the aged face as the avatar
 	avatarWarpedHead2 = am.getAppModel().textureToImage(agedTex);
@@ -150,7 +150,6 @@ void ageing(Mat faceImg)
 
 	cout << "Time to age: " << ((double)getTickCount() - t)/getTickFrequency() << endl;
 
-	waitKey();
 }
 
 
@@ -210,7 +209,8 @@ void Puppets(){		//this is where the magic happens! Sort of.
 			
 			ageing(faceimg);
 		}
-		imshow("Avatar", avatarWarpedHead2);
+		//imshow("Avatar", avatarWarpedHead2);
+		//imshow("Original", faceimg);
 
 		//***************//	
 		if(avatarWarpedHead2.empty() || PAWREADNEXTTIME){
@@ -1150,7 +1150,7 @@ void startGTK(int argc, char **argv){
 
 
 	/* Set the window title */
-	gtk_window_set_title (GTK_WINDOW (window), "Puppets Control Panel");
+	gtk_window_set_title (GTK_WINDOW (window), "Age Synthesis Control Panel");
 
 	/* Set a handler for delete_event that immediately
 	* exits GTK. */
@@ -1310,8 +1310,7 @@ int main (int argc, char **argv)
 	startGTK(argc,argv);
 
 	// Load the ageing model
-	// TODO: seems to run out of memory when trying to load the model...
-	am = AgeingModel("C:\\dataset\\Models\\Model5");
+	am = AgeingModel("AgeModel");
 
 	omp_init_lock(&writelock);
 
